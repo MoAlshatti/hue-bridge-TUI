@@ -1,10 +1,23 @@
 package main
 
 import (
+	"github.com/MoAlshatti/hue-bridge-TUI/internal/bridge"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+func main() {
+
+}
+
+type window struct {
+	width  int
+	height int
+}
+
 type model struct {
+	win    window
+	groups bridge.Groups
+	lights bridge.Lights
 }
 
 func (m model) Init() tea.Cmd {
@@ -17,8 +30,4 @@ func (m model) Update(tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	return " "
-}
-
-func main() {
-
 }
