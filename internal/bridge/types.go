@@ -1,5 +1,18 @@
 package bridge
 
+type Event int
+
+const (
+	_ Event = iota
+	//listt all events here..
+	FindingBridge
+	FindingUser
+	RequestPressButton
+	CreateUser //do we need it?
+	FetchingLights
+	DisplayingLights
+)
+
 // Light represents ..... TODO
 type Light struct {
 }
@@ -22,6 +35,14 @@ type Groups struct {
 	Items  []Group
 	LookUp map[LightID]Group
 	Cursor int
+}
+
+// Bridge has all the needed bridge info ....
+type Bridge struct {
+	ID      string `json:"id"`
+	Ip_addr string `json:"internalipaddress"`
+	Port    int    `json:"port"`
+	Info    []string
 }
 
 // represents the user uesd for the API

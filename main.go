@@ -18,6 +18,7 @@ type model struct {
 	win    window
 	groups bridge.Groups
 	lights bridge.Lights
+	event  bridge.Event
 }
 
 func (m model) Init() tea.Cmd {
