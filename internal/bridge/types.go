@@ -56,5 +56,5 @@ type ErrMsg struct {
 
 func (e ErrMsg) Error() string { return e.err.Error() }
 
-type BridgesFoundMsg Bridge
+type BridgeFoundMsg Bridge
 type NoBridgeFoundMsg ErrMsg

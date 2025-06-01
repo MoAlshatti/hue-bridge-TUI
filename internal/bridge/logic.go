@@ -36,7 +36,7 @@ func Find_bridges() tea.Msg {
 		}
 	}
 	// 3- return the list of bridges
-	return BridgesFoundMsg(brdgs[0])
+	return BridgeFoundMsg(brdgs[0])
 }
 
 func lookup_bridge_mdns(br []Bridge) ([]Bridge, error) {
