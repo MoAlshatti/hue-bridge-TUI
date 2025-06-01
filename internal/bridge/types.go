@@ -47,5 +47,14 @@ type Bridge struct {
 
 // represents the user uesd for the API
 type User struct {
-	Username string `json:"username"`
+	Username string `json:"Key"`
 }
+
+type ErrMsg struct {
+	err error
+}
+
+func (e ErrMsg) Error() string { return e.err.Error() }
+
+type BridgesFoundMsg Bridge
+type NoBridgeFoundMsg ErrMsg
