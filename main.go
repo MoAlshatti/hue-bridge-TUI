@@ -52,7 +52,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		log.Println("Bridge Found, ", msg.Ip_addr)
 		m.bridge = bridge.Bridge(msg)
 		m.event = bridge.FindingUser
-		//return m, bridge.Find_User(m.bridge)
+		return m, bridge.Find_User(m.bridge)
 	case bridge.NoBridgeFoundMsg:
 		log.Println(bridge.ErrMsg(msg))
 		return m, tea.Quit

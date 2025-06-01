@@ -12,12 +12,8 @@ import (
 	"github.com/hashicorp/mdns"
 )
 
-//maybe rename this file later
-
-// client is a global http client to be used for all http requests
-var client = http.Client{
-	Timeout: 25 * time.Second,
-}
+type BridgeFoundMsg Bridge
+type NoBridgeFoundMsg ErrMsg
 
 func Find_bridges() tea.Msg {
 	var brdgs []Bridge

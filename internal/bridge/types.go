@@ -1,5 +1,10 @@
 package bridge
 
+import (
+	"net/http"
+	"time"
+)
+
 type Event int
 
 const (
@@ -12,6 +17,10 @@ const (
 	FetchingLights
 	DisplayingLights
 )
+
+var client = http.Client{
+	Timeout: 25 * time.Second,
+}
 
 // Light represents ..... TODO
 type Light struct {
@@ -55,6 +64,3 @@ type ErrMsg struct {
 }
 
 func (e ErrMsg) Error() string { return e.err.Error() }
-
-type BridgeFoundMsg Bridge
-type NoBridgeFoundMsg ErrMsg
