@@ -1,2 +1,5 @@
 *.json
+userinfo.txt
+debug.log
+.debug.log
 

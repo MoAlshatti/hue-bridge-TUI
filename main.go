@@ -56,6 +56,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case bridge.NoBridgeFoundMsg:
 		log.Println(bridge.ErrMsg(msg))
 		return m, tea.Quit
+	case bridge.NoUserFoundMsg:
+		log.Println(bridge.ErrMsg(msg))
+		m.event = bridge.RequestPressButton
+		// here you should trigger the user to press the bridge button
+	case bridge.UserFoundMsg:
+		log.Println(string(msg))
+		//start displaying
 
 	case tea.KeyMsg:
 		switch msg.String() {
