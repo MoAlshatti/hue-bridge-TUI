@@ -21,7 +21,8 @@ func Find_bridges() tea.Msg {
 	// 1- find via mdns
 	brdgs, err := lookup_bridge_mdns(brdgs)
 	if err != nil {
-		log.Println(err)
+		log.Println("mdns_failed: ", err)
+		err = nil // resetting the error value since no return
 	}
 
 	// 2- find via querying meetdicovery.com if mdns doesnt find anything

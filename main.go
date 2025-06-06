@@ -40,7 +40,7 @@ func initalModel() model {
 }
 
 func (m model) Init() tea.Cmd {
-	return bridge.Find_bridges
+	return bridge.Init_client
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -63,6 +63,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case bridge.UserFoundMsg:
 		log.Println(string(msg))
 		//start displaying
+	case bridge.ClientCreatedMsg:
+		return m, bridge.Find_bridges
+	case bridge.NoClientCreatedMsg:
+		log.Println(bridge.ErrMsg(msg))
+		return m, tea.Quit
 
 	case tea.KeyMsg:
 		switch msg.String() {

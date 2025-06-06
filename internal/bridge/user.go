@@ -26,10 +26,11 @@ func Find_User(b Bridge) tea.Cmd {
 		}
 		url := fmt.Sprintf("https://%s/clip/v2/resource/bridge", b.Ip_addr)
 
-		req, err := create_finduser_req(url, string(username))
+		req, cancel, err := create_finduser_req(url, string(username))
 		if err != nil {
 			return NoUserFoundMsg(ErrMsg{err})
 		}
+		defer cancel()
 		resp, err := client.Do(req)
 		if err != nil {
 			return NoUserFoundMsg(ErrMsg{err})
@@ -40,18 +41,18 @@ func Find_User(b Bridge) tea.Cmd {
 		return UserFoundMsg("Yayy user found")
 	}
 }
-func create_finduser_req(url, username string) (*http.Request, error) {
+func create_finduser_req(url, username string) (*http.Request, context.CancelFunc, error) {
 
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return nil, err
+		cancel()
+		return nil, nil, err
 	}
 	req.Header.Add("hue-application-key", username)
 	req.Header.Add("Accept", "application/json")
-	return req, nil
+	return req, cancel, nil
 }
 
 type UserCreatedMsg string
