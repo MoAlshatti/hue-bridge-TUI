@@ -11,7 +11,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-var client http.Client
+var client *http.Client
 
 //go:embed certs
 var certs embed.FS
@@ -49,7 +49,7 @@ func Init_client() tea.Msg {
 		TLSClientConfig: tlsConf,
 	}
 
-	client = http.Client{
+	client = &http.Client{
 		Timeout:   15 * time.Second,
 		Transport: tr,
 	}

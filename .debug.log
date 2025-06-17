@@ -1,16 +1,4 @@
-2025/06/02 09:11:16 Bridge Found,  192.168.178.120
-2025/06/02 09:11:16 Get "https://192.168.178.120/clip/v2/resource/bridge": context canceled
-2025/06/06 06:28:55 Bridge Found,  192.168.178.120
-2025/06/06 06:28:55 Get "https://192.168.178.120/clip/v2/resource/bridge": context canceled
-2025/06/06 06:40:42 Bridge Found,  192.168.178.120
-2025/06/06 06:40:42 Get "https://192.168.178.120/clip/v2/resource/bridge": context canceled
-2025/06/06 06:47:16 Bridge Found,  192.168.178.120
-2025/06/06 06:47:16 Get "https://192.168.178.120/clip/v2/resource/bridge": context canceled
-2025/06/06 06:47:37 Bridge Found,  192.168.178.120
-2025/06/06 06:47:37 Get "https://192.168.178.120/clip/v2/resource/bridge": context canceled
-2025/06/06 06:49:49 Bridge Found,  192.168.178.120
-2025/06/06 06:49:49 Get "https://192.168.178.120/clip/v2/resource/bridge": context canceled
-2025/06/06 06:52:37 Bridge Found,  192.168.178.120
-2025/06/06 06:52:37 Get "https://192.168.178.120/clip/v2/resource/bridge": context canceled
-2025/06/06 06:55:57 Bridge Found,  192.168.178.120
-2025/06/06 06:55:57 Get "https://192.168.178.120/clip/v2/resource/bridge": tls: failed to verify certificate: x509: cannot validate certificate for 192.168.178.120 because it doesn't contain any IP SANs
+2025/06/09 10:43:28 Bridge Found,  192.168.178.120
+2025/06/09 10:43:28 Get "https://192.168.178.120/clip/v2/resource/bridge": tls: failed to verify certificate: x509: cannot validate certificate for 192.168.178.120 because it doesn't contain any IP SANs
+2025/06/09 11:11:41 Bridge Found,  192.168.178.120
+2025/06/09 11:11:41 Get "https://192.168.178.120/clip/v2/resource/bridge": tls: failed to verify certificate: x509: cannot validate certificate for 192.168.178.120 because it doesn't contain any IP SANs

@@ -1,7 +1,9 @@
 package bridge
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -58,8 +60,46 @@ func create_finduser_req(url, username string) (*http.Request, context.CancelFun
 type UserCreatedMsg string
 type UserCreationFailedMsg ErrMsg
 
+// This function should be called after Find_User
 func Create_User(b Bridge) tea.Cmd {
 	return func() tea.Msg {
-		return ""
+
+		url := fmt.Sprintf("https://%s/api", b.Ip_addr)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		body := struct {
+			Devicetype        string `json:"devicetype"`
+			Generateclientkey bool   `json:"generateclientkey"`
+		}{
+			"hueApp#root",
+			true,
+		}
+		var buff bytes.Buffer
+		json.NewEncoder(&buff).Encode(&body)
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, &buff)
+		if err != nil {
+			return UserCreationFailedMsg(ErrMsg{err})
+		}
+
+		resp, err := client.Do(req)
+		if err != nil {
+			return UserCreationFailedMsg(ErrMsg{err})
+		}
+		defer resp.Body.Close()
+		var apiErr ApiError
+		decoder := json.NewDecoder(resp.Body)
+
+		err = decoder.Decode(&apiErr)
+		if err == nil {
+			return UserCreationFailedMsg(ErrMsg{errors.New(fmt.Sprintf("error %v, %w\n", apiErr.Error.Type, apiErr.Error))})
+		}
+
+		var auth AuthSuccess
+		err = decoder.Decode(&auth)
+		if err != nil {
+			return UserCreationFailedMsg(ErrMsg{err})
+		}
+		return UserCreatedMsg(auth.Success.ClientKey)
 	}
 }

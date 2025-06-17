@@ -68,6 +68,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case bridge.NoClientCreatedMsg:
 		log.Println(bridge.ErrMsg(msg))
 		return m, tea.Quit
+	case bridge.UserCreatedMsg:
+		//
+	case bridge.UserCreationFailedMsg:
+		//
 
 	case tea.KeyMsg:
 		switch msg.String() {
