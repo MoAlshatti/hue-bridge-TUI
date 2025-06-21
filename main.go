@@ -69,9 +69,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		log.Println(bridge.ErrMsg(msg))
 		return m, tea.Quit
 	case bridge.UserCreatedMsg:
-		//
+		//saved user to a file
+
+		// send retrieve resources cmd
+
+		// batch cmds
+
 	case bridge.UserCreationFailedMsg:
-		//
+		log.Println("Failed to create user, quitting...")
+		return m, tea.Quit
+
+	case bridge.ButtonNotPressed:
+		//recall create user function after displaying a display button message
 
 	case tea.KeyMsg:
 		switch msg.String() {

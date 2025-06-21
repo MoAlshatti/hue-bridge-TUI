@@ -58,6 +58,7 @@ func create_finduser_req(url, username string) (*http.Request, context.CancelFun
 }
 
 type UserCreatedMsg string
+type ButtonNotPressed string
 type UserCreationFailedMsg ErrMsg
 
 // This function should be called after Find_User
@@ -92,6 +93,9 @@ func Create_User(b Bridge) tea.Cmd {
 
 		err = decoder.Decode(&apiErr)
 		if err == nil {
+			if apiErr.Error.Type == 101 {
+				return ButtonNotPressed("")
+			}
 			return UserCreationFailedMsg(ErrMsg{errors.New(fmt.Sprintf("error %v, %w\n", apiErr.Error.Type, apiErr.Error))})
 		}
 
@@ -101,5 +105,17 @@ func Create_User(b Bridge) tea.Cmd {
 			return UserCreationFailedMsg(ErrMsg{err})
 		}
 		return UserCreatedMsg(auth.Success.ClientKey)
+	}
+}
+
+type UserNotSaved ErrMsg
+
+func Save_Username(username string) tea.Cmd {
+	return func() tea.Msg {
+		err := os.WriteFile(fileName, []byte(username), 0644)
+		if err != nil {
+			return UserNotSaved(ErrMsg{err})
+		}
+		return nil
 	}
 }
