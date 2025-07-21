@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -68,6 +67,8 @@ type UserCreationFailedMsg ErrMsg
 func Create_User(b Bridge) tea.Cmd {
 	return func() tea.Msg {
 
+		// 1- Sending the Request
+
 		url := fmt.Sprintf("https://%s/api", b.Ip_addr)
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -91,8 +92,12 @@ func Create_User(b Bridge) tea.Cmd {
 		if err != nil {
 			return UserCreationFailedMsg(ErrMsg{err})
 		}
+
+		// 2 - Dealing with the Response
+
 		defer resp.Body.Close()
 
+		//resp.Body is a readCloser, hence we have to copy it first if we want to read it twice
 		jsonBody, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return UserCreationFailedMsg(ErrMsg{err})
@@ -100,31 +105,27 @@ func Create_User(b Bridge) tea.Cmd {
 		bodyReader := bytes.NewReader(jsonBody)
 
 		var apiErr []ApiError
+		// using json.decoder instead of unmarshal because it can check for unkown fields natively
 		decoder := json.NewDecoder(bodyReader)
 		decoder.DisallowUnknownFields()
-
 		err = decoder.Decode(&apiErr)
 
-		log.Println(apiErr[0].Error)
+		// an error is expected if its a success message, hence we check with == instead
 		if err == nil {
 			if apiErr[0].Error.Type == 101 {
 				return ButtonNotPressed("Error 101, button not pressed")
 			}
 			return UserCreationFailedMsg(ErrMsg{fmt.Errorf("error %v\n", apiErr[0].Error)})
 		}
+
 		bodyReader.Seek(0, io.SeekStart)
 
 		var auth []AuthSuccess
-		decoder = json.NewDecoder(bodyReader)
-		decoder.DisallowUnknownFields()
+
 		err = decoder.Decode(&auth)
-		for i, v := range auth {
-			log.Println("item", i, " ", v)
-		}
 		if err != nil {
 			return UserCreationFailedMsg(ErrMsg{err})
 		}
-		log.Println("user created! ", auth[0].Success.ClientKey)
 		return UserCreatedMsg(auth[0].Success.ClientKey)
 	}
 }
