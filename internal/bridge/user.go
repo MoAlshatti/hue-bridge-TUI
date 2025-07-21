@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -40,7 +41,7 @@ func Find_User(b Bridge) tea.Cmd {
 		if resp.StatusCode != http.StatusOK {
 			return NoUserFoundMsg(ErrMsg{errors.New("invalid user!")})
 		}
-		return UserFoundMsg("Yayy user found")
+		return UserFoundMsg(username)
 	}
 }
 func create_finduser_req(url, username string) (*http.Request, context.CancelFunc, error) {
@@ -52,6 +53,7 @@ func create_finduser_req(url, username string) (*http.Request, context.CancelFun
 		cancel()
 		return nil, nil, err
 	}
+
 	req.Header.Add("hue-application-key", username)
 	req.Header.Add("Accept", "application/json")
 	return req, cancel, nil
@@ -88,23 +90,31 @@ func Create_User(b Bridge) tea.Cmd {
 			return UserCreationFailedMsg(ErrMsg{err})
 		}
 		defer resp.Body.Close()
-		var apiErr ApiError
+		var apiErr []ApiError
 		decoder := json.NewDecoder(resp.Body)
+		decoder.DisallowUnknownFields()
 
 		err = decoder.Decode(&apiErr)
-		if err == nil {
-			if apiErr.Error.Type == 101 {
-				return ButtonNotPressed("")
-			}
-			return UserCreationFailedMsg(ErrMsg{errors.New(fmt.Sprintf("error %v, %w\n", apiErr.Error.Type, apiErr.Error))})
-		}
 
-		var auth AuthSuccess
+		log.Println(apiErr[0].Error)
+		if err == nil {
+			if apiErr[0].Error.Type == 101 {
+				return ButtonNotPressed("Error 101, button not pressed")
+			}
+			return UserCreationFailedMsg(ErrMsg{fmt.Errorf("error %v\n", apiErr[0].Error)})
+		}
+		var auth []AuthSuccess
+		decoder = json.NewDecoder(resp.Body)
+		decoder.DisallowUnknownFields()
 		err = decoder.Decode(&auth)
+		for i, v := range auth {
+			log.Println("item", i, " ", v)
+		}
 		if err != nil {
 			return UserCreationFailedMsg(ErrMsg{err})
 		}
-		return UserCreatedMsg(auth.Success.ClientKey)
+		log.Println("user created! ", auth[0].Success.ClientKey)
+		return UserCreatedMsg(auth[0].Success.ClientKey)
 	}
 }
 

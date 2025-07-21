@@ -42,7 +42,8 @@ func Init_client() tea.Msg {
 	}
 
 	tlsConf := &tls.Config{
-		RootCAs: certPool,
+		RootCAs:            certPool,
+		InsecureSkipVerify: true, //FOR DEVELOPMENT ONLY, until i figure the fuck out the correct way to do it without the client complaining about SANs
 	}
 
 	tr := &http.Transport{

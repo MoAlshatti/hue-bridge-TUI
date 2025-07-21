@@ -1,4 +1,10 @@
-2025/06/09 10:43:28 Bridge Found,  192.168.178.120
-2025/06/09 10:43:28 Get "https://192.168.178.120/clip/v2/resource/bridge": tls: failed to verify certificate: x509: cannot validate certificate for 192.168.178.120 because it doesn't contain any IP SANs
-2025/06/09 11:11:41 Bridge Found,  192.168.178.120
-2025/06/09 11:11:41 Get "https://192.168.178.120/clip/v2/resource/bridge": tls: failed to verify certificate: x509: cannot validate certificate for 192.168.178.120 because it doesn't contain any IP SANs
+2025/07/21 05:56:37 Bridge Found,  192.168.50.127
+2025/07/21 05:56:37 open userinfo.txt: no such file or directory
+2025/07/21 05:56:40 {101  link button not pressed}
+2025/07/21 05:56:57 {0  }
+2025/07/21 05:56:57 Failed to create user, quitting... EOF
+2025/07/21 05:57:33 Bridge Found,  192.168.50.127
+2025/07/21 05:57:33 open userinfo.txt: no such file or directory
+2025/07/21 05:57:35 {101  link button not pressed}
+2025/07/21 05:57:47 {0  }
+2025/07/21 05:57:47 Failed to create user, quitting... EOF

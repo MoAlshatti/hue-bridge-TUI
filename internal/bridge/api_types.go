@@ -2,6 +2,7 @@ package bridge
 
 type AuthSuccess struct {
 	Success struct {
+		UserName  string `json:"username"`
 		ClientKey string `json:"clientkey"`
 	} `json:"success"`
 }

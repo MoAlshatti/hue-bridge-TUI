@@ -37,6 +37,16 @@ type Groups struct {
 	Cursor int
 }
 
+const (
+	Quit           = 0
+	PressTheButton = 1
+)
+
+type UserPage struct {
+	Items  [2]string //its gonna be 2, quit and buttonPressed
+	Cursor int
+}
+
 // Bridge has all the needed bridge info ....
 type Bridge struct {
 	ID      string `json:"id"`
