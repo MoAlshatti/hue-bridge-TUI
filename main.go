@@ -90,10 +90,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// batch cmds
 		return m, tea.Batch(bridge.Save_Username(string(msg))) //add retreive resoruscres later
 	case bridge.UserCreationFailedMsg:
-		log.Println("Failed to create user, quitting...", bridge.ErrMsg(msg))
+		log.Println("Failed to create user, err: ", bridge.ErrMsg(msg))
 		return m, tea.Quit
 
-	//case bridge.ButtonNotPressed:
+	case bridge.ButtonNotPressed:
+		log.Println(string(msg))
 	//recall create user function after displaying a display button message
 
 	case tea.KeyMsg:

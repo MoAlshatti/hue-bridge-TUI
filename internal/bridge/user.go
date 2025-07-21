@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -79,6 +80,7 @@ func Create_User(b Bridge) tea.Cmd {
 			true,
 		}
 		var buff bytes.Buffer
+
 		json.NewEncoder(&buff).Encode(&body)
 		req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, &buff)
 		if err != nil {
@@ -90,8 +92,15 @@ func Create_User(b Bridge) tea.Cmd {
 			return UserCreationFailedMsg(ErrMsg{err})
 		}
 		defer resp.Body.Close()
+
+		jsonBody, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return UserCreationFailedMsg(ErrMsg{err})
+		}
+		bodyReader := bytes.NewReader(jsonBody)
+
 		var apiErr []ApiError
-		decoder := json.NewDecoder(resp.Body)
+		decoder := json.NewDecoder(bodyReader)
 		decoder.DisallowUnknownFields()
 
 		err = decoder.Decode(&apiErr)
@@ -103,8 +112,10 @@ func Create_User(b Bridge) tea.Cmd {
 			}
 			return UserCreationFailedMsg(ErrMsg{fmt.Errorf("error %v\n", apiErr[0].Error)})
 		}
+		bodyReader.Seek(0, io.SeekStart)
+
 		var auth []AuthSuccess
-		decoder = json.NewDecoder(resp.Body)
+		decoder = json.NewDecoder(bodyReader)
 		decoder.DisallowUnknownFields()
 		err = decoder.Decode(&auth)
 		for i, v := range auth {
