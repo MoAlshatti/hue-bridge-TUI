@@ -15,11 +15,16 @@ const (
 
 // Light represents ..... TODO
 type Light struct {
+	ID        string
+	Type      string
+	metadata  Metadata
+	Color     XyColor
+	ColorTemp ColorTemperature
 }
 
 // Light is a panel type which incluedes an array of lights and a panel cursor...
 type Lights struct {
-	items  []Light
+	Items  []Light
 	Cursor int
 }
 

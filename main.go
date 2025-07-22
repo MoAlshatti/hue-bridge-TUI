@@ -73,6 +73,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.user.Username = string(msg)
 
 		// retreive lights here
+		return m, tea.Batch(bridge.Fetch_lights(m.bridge, m.user.Username)) // add fetch_bridge later
 
 		//start displaying
 
@@ -83,20 +84,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	case bridge.UserCreatedMsg:
 		m.event = bridge.FetchingLights
-		//saved user to a file
-
-		// send retrieve resources cmd
-
-		// batch cmds
-		return m, tea.Batch(bridge.Save_Username(string(msg))) //add retreive resoruscres later
+		return m, tea.Batch(bridge.Save_Username(string(msg)), bridge.Fetch_lights(m.bridge, m.user.Username)) //add retreive bridge later
 	case bridge.UserCreationFailedMsg:
 		log.Println("Failed to create user, err: ", bridge.ErrMsg(msg))
 		return m, tea.Quit
 
 	case bridge.ButtonNotPressed:
 		log.Println(string(msg))
-	//recall create user function after displaying a display button message
 
+	case bridge.FailedFetchingLightsMsg:
+		//
+		log.Println(bridge.ErrMsg(msg))
+		return m, tea.Quit
+	case bridge.LightsMsg:
+		//
+		m.lights.Items = []bridge.Light(msg)
+		m.event = bridge.DisplayingLights
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
