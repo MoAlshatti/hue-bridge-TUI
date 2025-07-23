@@ -17,7 +17,7 @@ const (
 type Light struct {
 	ID        string
 	Type      string
-	metadata  Metadata
+	Metadata  Metadata
 	Color     XyColor
 	ColorTemp ColorTemperature
 }

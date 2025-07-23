@@ -2,7 +2,8 @@ package bridge
 
 type AuthSuccess struct {
 	Success struct {
-		UserName  string `json:"username"`
+		UserName string `json:"username"`
+		//[Ignore] dont use this guy
 		ClientKey string `json:"clientkey"`
 	} `json:"success"`
 }

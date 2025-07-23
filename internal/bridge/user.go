@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -28,6 +28,7 @@ func Find_User(b Bridge) tea.Cmd {
 			return NoUserFoundMsg(ErrMsg{err})
 		}
 		url := fmt.Sprintf("https://%s/clip/v2/resource/bridge", b.Ip_addr)
+		log.Println(username)
 
 		req, cancel, err := create_finduser_req(url, string(username))
 		if err != nil {
@@ -39,7 +40,7 @@ func Find_User(b Bridge) tea.Cmd {
 			return NoUserFoundMsg(ErrMsg{err})
 		}
 		if resp.StatusCode != http.StatusOK {
-			return NoUserFoundMsg(ErrMsg{errors.New("invalid user!")})
+			return NoUserFoundMsg(ErrMsg{fmt.Errorf("Invalid user! Error: %v", resp.Status)})
 		}
 		return UserFoundMsg(username)
 	}
@@ -126,7 +127,7 @@ func Create_User(b Bridge) tea.Cmd {
 		if err != nil {
 			return UserCreationFailedMsg(ErrMsg{err})
 		}
-		return UserCreatedMsg(auth[0].Success.ClientKey)
+		return UserCreatedMsg(auth[0].Success.UserName)
 	}
 }
 

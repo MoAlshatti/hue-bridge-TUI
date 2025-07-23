@@ -83,6 +83,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		log.Println(bridge.ErrMsg(msg))
 		return m, tea.Quit
 	case bridge.UserCreatedMsg:
+		m.user.Username = string(msg)
 		m.event = bridge.FetchingLights
 		return m, tea.Batch(bridge.Save_Username(string(msg)), bridge.Fetch_lights(m.bridge, m.user.Username)) //add retreive bridge later
 	case bridge.UserCreationFailedMsg:
@@ -151,7 +152,14 @@ func (m model) View() string {
 		}
 		userpage := view.Render_userpage(title, quitOpt, pressOpt)
 		return lipgloss.Place(m.win.width, m.win.height, lipgloss.Center, lipgloss.Center, userpage)
-
+	case bridge.DisplayingLights:
+		//
+		var s string
+		for _, v := range m.lights.Items {
+			s += v.Metadata.Name
+			s += "\n"
+		}
+		return s
 	}
 	return " "
 }
