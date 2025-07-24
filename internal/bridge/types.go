@@ -31,8 +31,16 @@ type Lights struct {
 // LightID .... TODO
 type LightID string
 
-// Group is either a zone or .... TODO
+// Group is either a zone or a room.... TODO
 type Group struct { // consider making it lowercase if you aint finna use it in main
+	ID       string
+	Children []Child
+	Services []Service
+	Metadata struct {
+		Name      string
+		Archetype string
+	}
+	Type string
 }
 
 // Groups is a panel type which includes an array of groups, a panel cursor, and a map from the lights to the groups

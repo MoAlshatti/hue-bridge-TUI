@@ -133,3 +133,26 @@ type ApiLights struct {
 		Type string `json:"type"`
 	} `json:"data"`
 }
+
+type Child struct {
+	Rid   string `json:"rid"`
+	Rtype string `json:"rtype"`
+}
+type Service struct {
+	Rid   string `json:"rid"`
+	Rtype string `json:"rtype"`
+}
+type ApiGroup struct {
+	Errors []ApiError `json:"errors"`
+	Data   []struct {
+		ID       string    `json:"id"`
+		IDV1     string    `json:"id_v1"`
+		Children []Child   `json:"children"`
+		Services []Service `json:"services"`
+		Metadata struct {
+			Name      string `json:"name"`
+			Archetype string `json:"archetype"`
+		} `json:"metadata"`
+		Type string `json:"type"`
+	} `json:"data"`
+}

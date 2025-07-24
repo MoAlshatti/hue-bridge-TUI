@@ -73,7 +73,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.user.Username = string(msg)
 
 		// retreive lights here
-		return m, tea.Batch(bridge.Fetch_lights(m.bridge, m.user.Username)) // add fetch_bridge later
+		return m, tea.Batch(bridge.Fetch_lights(m.bridge, m.user.Username), bridge.Fetch_groups(m.bridge, m.user.Username)) // add fetch_bridge later
 
 		//start displaying
 
@@ -85,7 +85,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case bridge.UserCreatedMsg:
 		m.user.Username = string(msg)
 		m.event = bridge.FetchingLights
-		return m, tea.Batch(bridge.Save_Username(string(msg)), bridge.Fetch_lights(m.bridge, m.user.Username)) //add retreive bridge later
+		return m, tea.Batch(bridge.Save_Username(string(msg)), bridge.Fetch_lights(m.bridge, m.user.Username), bridge.Fetch_groups(m.bridge, m.user.Username)) //add retreive bridge later
 	case bridge.UserCreationFailedMsg:
 		log.Println("Failed to create user, err: ", bridge.ErrMsg(msg))
 		return m, tea.Quit
@@ -101,6 +101,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		//
 		m.lights.Items = []bridge.Light(msg)
 		m.event = bridge.DisplayingLights
+
+	case bridge.FailedToFetchGroupsMsg:
+		log.Println(bridge.ErrMsg(msg))
+		return m, tea.Quit
+	case bridge.GroupsMsg:
+		m.groups.Items = []bridge.Group(msg)
+		//
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
@@ -156,6 +163,11 @@ func (m model) View() string {
 		//
 		var s string
 		for _, v := range m.lights.Items {
+			s += v.Metadata.Name
+			s += "\n"
+		}
+		s += "------------------------\n"
+		for _, v := range m.groups.Items {
 			s += v.Metadata.Name
 			s += "\n"
 		}

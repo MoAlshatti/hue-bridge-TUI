@@ -69,3 +69,61 @@ func Fetch_lights(b Bridge, appkey string) tea.Cmd {
 		return LightsMsg(lights)
 	}
 }
+
+type GroupsMsg []Group
+type FailedToFetchGroupsMsg ErrMsg
+
+func Fetch_groups(b Bridge, appkey string) tea.Cmd {
+	return func() tea.Msg {
+		var urls []string
+		url := fmt.Sprintf("https://%s/clip/v2/resource/zone", b.Ip_addr)
+		url2 := fmt.Sprintf("https://%s/clip/v2/resource/room", b.Ip_addr)
+		urls = append(urls, url, url2)
+
+		groups := make([]Group, 0, 10)
+
+		for _, v := range urls {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, v, nil)
+			if err != nil {
+				return FailedToFetchGroupsMsg(ErrMsg{err})
+			}
+			set_header(req, appkey)
+
+			resp, err := client.Do(req)
+
+			if resp.StatusCode != http.StatusOK {
+				return FailedToFetchGroupsMsg(ErrMsg{fmt.Errorf("failed to fetch groups: %v", resp.Status)})
+			}
+
+			defer resp.Body.Close()
+
+			decoder := json.NewDecoder(resp.Body)
+			var apiGroups ApiGroup
+
+			err = decoder.Decode(&apiGroups)
+			if err != nil {
+				return FailedToFetchGroupsMsg(ErrMsg{err})
+			}
+
+			for _, err := range apiGroups.Errors {
+				log.Println(err.Error.Description)
+			}
+
+			for _, group := range apiGroups.Data {
+				//
+				var newGroup Group
+				newGroup.ID = group.ID
+				newGroup.Type = group.Type
+				newGroup.Children = group.Children
+				newGroup.Services = group.Services
+				newGroup.Metadata.Archetype = group.Metadata.Archetype
+				newGroup.Metadata.Name = group.Metadata.Name
+				groups = append(groups, newGroup)
+			}
+		}
+		return GroupsMsg(groups)
+	}
+}
