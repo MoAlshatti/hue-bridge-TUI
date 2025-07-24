@@ -161,17 +161,21 @@ func (m model) View() string {
 		return lipgloss.Place(m.win.width, m.win.height, lipgloss.Center, lipgloss.Center, userpage)
 	case bridge.DisplayingLights:
 		//
-		var s string
-		for _, v := range m.lights.Items {
-			s += v.Metadata.Name
-			s += "\n"
+		title := view.Render_bridge_title("Hue Bridge")
+		bridgepanel := view.Render_bridge_panel(title, true)
+
+		var groups []string
+		for i, v := range m.groups.Items {
+			if i == 0 {
+
+				groups = append(groups, view.Render_group_title(v.Metadata.Name, true))
+			} else {
+
+				groups = append(groups, view.Render_group_title(v.Metadata.Name, false))
+			}
 		}
-		s += "------------------------\n"
-		for _, v := range m.groups.Items {
-			s += v.Metadata.Name
-			s += "\n"
-		}
-		return s
+		grouppanel := view.Render_group_panel(groups, true)
+		return lipgloss.JoinVertical(lipgloss.Left, bridgepanel, grouppanel)
 	}
 	return " "
 }
