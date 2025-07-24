@@ -42,6 +42,9 @@ type model struct {
 func initalModel() model {
 	return model{
 		userpage: bridge.UserPage{Items: [2]string{"Quit", "Done!"}},
+		lights:   bridge.Lights{Cursor: 0},
+		groups:   bridge.Groups{Cursor: 0},
+		bridge:   bridge.Bridge{Selected: true},
 	} // TODO
 }
 
@@ -57,6 +60,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case bridge.BridgeFoundMsg:
 		log.Println("Bridge Found, ", msg.Ip_addr)
 		m.bridge = bridge.Bridge(msg)
+		m.bridge.Selected = true
 		m.event = bridge.FindingUser
 		return m, bridge.Find_User(m.bridge)
 	case bridge.NoBridgeFoundMsg:
@@ -65,8 +69,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case bridge.NoUserFoundMsg:
 		log.Println(bridge.ErrMsg(msg))
 		m.event = bridge.RequestPressButton
-		// here you should trigger the user to press the bridge button
-
 	case bridge.UserFoundMsg:
 		m.event = bridge.FetchingLights
 		log.Println("user found!")
@@ -112,8 +114,40 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
-		case "h", "left":
+		case "1":
+			m.groups.Selected, m.lights.Selected = false, false
+			m.bridge.Selected = true
+		case "2":
+			m.bridge.Selected, m.lights.Selected = false, false
+			m.groups.Selected = true
+		case "3":
 			//
+			m.bridge.Selected, m.groups.Selected = false, false
+			m.lights.Selected = true
+		case "4":
+			// select scenes panel
+		case "j", "down":
+			if m.groups.Selected {
+				if m.groups.Cursor < len(m.groups.Items)-1 {
+					m.groups.Cursor++
+				}
+			} else if m.lights.Selected {
+				if m.lights.Cursor < len(m.lights.Items)-1 {
+					m.lights.Cursor++
+				}
+			}
+		case "k", "up":
+			if m.groups.Selected {
+				if m.groups.Cursor > 0 {
+					m.groups.Cursor--
+				}
+			} else if m.lights.Selected {
+				if m.lights.Cursor > 0 {
+					m.lights.Cursor--
+				}
+			}
+
+		case "h", "left":
 			switch m.event {
 			case bridge.RequestPressButton:
 				if m.userpage.Cursor <= 1 {
@@ -160,34 +194,48 @@ func (m model) View() string {
 		userpage := view.Render_userpage(title, quitOpt, pressOpt)
 		return lipgloss.Place(m.win.width, m.win.height, lipgloss.Center, lipgloss.Center, userpage)
 	case bridge.DisplayingLights:
-		//
 		title := view.Render_bridge_title("Hue Bridge")
-		bridgepanel := view.Render_bridge_panel(title, true)
+
+		var bridgepanel string
+		if m.bridge.Selected {
+			bridgepanel = view.Render_bridge_panel(title, true)
+		} else {
+			bridgepanel = view.Render_bridge_panel(title, false)
+		}
 
 		var groups []string
 		for i, v := range m.groups.Items {
-			if i == 0 {
+			if i == m.groups.Cursor {
 
 				groups = append(groups, view.Render_group_title(v.Metadata.Name, true))
 			} else {
-
 				groups = append(groups, view.Render_group_title(v.Metadata.Name, false))
 			}
 		}
-		grouppanel := view.Render_group_panel(groups, true)
+		var grouppanel string
+		if m.groups.Selected {
+			grouppanel = view.Render_group_panel(groups, true, m.groups.Cursor)
+		} else {
+
+			grouppanel = view.Render_group_panel(groups, false, m.groups.Cursor)
+		}
 
 		var lights []string
 		for i, v := range m.lights.Items {
-			if i == 0 {
+			if i == m.lights.Cursor {
 				lights = append(lights, view.Render_light_title(v.Metadata.Name, v.Dimming.Brightness, true))
 			} else {
-				if i == 5 {
-					break
-				}
 				lights = append(lights, view.Render_light_title(v.Metadata.Name, v.Dimming.Brightness, false))
 			}
 		}
-		lightpanel := view.Render_light_panel(lights, true)
+
+		var lightpanel string
+		if m.lights.Selected {
+			lightpanel = view.Render_light_panel(lights, true, m.lights.Cursor)
+		} else {
+
+			lightpanel = view.Render_light_panel(lights, false, m.lights.Cursor)
+		}
 		return lipgloss.JoinVertical(lipgloss.Left, bridgepanel, grouppanel, lightpanel)
 	}
 	return " "

@@ -13,13 +13,24 @@ func Render_group_title(title string, selected bool) string {
 	}
 	return defaultStyle.Render(apply_horizontal_limit(title, default_horizontal_limit))
 }
-func Render_group_panel(elems []string, selected bool) string {
+func Render_group_panel(elems []string, selected bool, cursor int) string {
 
 	border := lipgloss.RoundedBorder()
 	border.TopLeft = "2" // gotta find a better way to title borders
 
 	defaultStyle := lipgloss.NewStyle().Border(border).Margin(0, 1).PaddingLeft(1)
 	selectedStyle := defaultStyle.BorderForeground(cyan)
+
+	if len(elems) > max_groups_page_size {
+		pagesize := min(max_groups_page_size, len(elems))
+		if cursor%pagesize == 0 {
+			elems = elems[cursor : cursor+pagesize]
+		} else {
+			start := cursor - cursor%pagesize
+			elems = elems[start : start+pagesize]
+		}
+
+	}
 
 	elems = apply_vertical_limit(elems, groups_vertical_limit)
 

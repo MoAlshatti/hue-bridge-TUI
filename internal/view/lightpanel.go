@@ -2,6 +2,7 @@ package view
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/charmbracelet/lipgloss"
 )
@@ -9,7 +10,8 @@ import (
 func Render_light_title(title string, bri float64, selected bool) string {
 	style := lipgloss.NewStyle()
 	selectedStyle := style.Background(white).Foreground(navy)
-	brightness := fmt.Sprint(int(bri), `%`)
+	log.Println(bri)
+	brightness := fmt.Sprint(int(bri), `% `)
 
 	output := apply_horizontal_limit(title, default_horizontal_limit)
 
@@ -23,16 +25,27 @@ func Render_light_title(title string, bri float64, selected bool) string {
 	return style.Render(output)
 }
 
-func Render_light_panel(elems []string, selected bool) string {
+func Render_light_panel(elems []string, selected bool, cursor int) string {
 	border := lipgloss.RoundedBorder()
 	border.TopLeft = "3"
 
 	defaultStyle := lipgloss.NewStyle().Border(border).Margin(0, 1).PaddingLeft(1)
 	selectedStyle := defaultStyle.BorderForeground(cyan)
 
-	elems = apply_vertical_limit(elems, lights_vertical_limit)
+	if len(elems) > max_lights_page_size {
+		pageSize := min(max_lights_page_size, len(elems))
+		if cursor%pageSize == 0 {
+			elems = elems[cursor : cursor+pageSize]
+		} else {
+			start := cursor - cursor%pageSize
+			elems = elems[start:(start + pageSize)]
+		}
 
-	items := lipgloss.JoinVertical(lipgloss.Left, elems...)
+	}
+
+	new_elems := apply_vertical_limit(elems, lights_vertical_limit)
+
+	items := lipgloss.JoinVertical(lipgloss.Left, new_elems...)
 
 	if selected {
 		return selectedStyle.Render(items)

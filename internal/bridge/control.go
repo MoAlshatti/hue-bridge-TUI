@@ -61,6 +61,7 @@ func Fetch_lights(b Bridge, appkey string) tea.Cmd {
 			light.ID = v.ID
 			light.Type = v.Type
 			light.Metadata = v.Metadata
+			light.Dimming = v.Dimming
 			light.Color = v.Color.Xy
 			light.ColorTemp = v.ColorTemperature
 			lights = append(lights, light)

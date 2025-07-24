@@ -25,8 +25,9 @@ type Light struct {
 
 // Light is a panel type which incluedes an array of lights and a panel cursor...
 type Lights struct {
-	Items  []Light
-	Cursor int
+	Items    []Light
+	Selected bool
+	Cursor   int
 }
 
 // LightID .... TODO
@@ -46,9 +47,10 @@ type Group struct { // consider making it lowercase if you aint finna use it in 
 
 // Groups is a panel type which includes an array of groups, a panel cursor, and a map from the lights to the groups
 type Groups struct {
-	Items  []Group
-	LookUp map[LightID]Group
-	Cursor int
+	Items    []Group
+	LookUp   map[LightID]Group
+	Selected bool
+	Cursor   int
 }
 
 const (
@@ -63,10 +65,11 @@ type UserPage struct {
 
 // Bridge has all the needed bridge info ....
 type Bridge struct {
-	ID      string `json:"id"`
-	Ip_addr string `json:"internalipaddress"`
-	Port    int    `json:"port"`
-	Info    []string
+	ID       string `json:"id"`
+	Ip_addr  string `json:"internalipaddress"`
+	Port     int    `json:"port"`
+	Selected bool
+	Info     []string
 }
 
 // represents the user uesd for the API
