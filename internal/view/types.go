@@ -16,7 +16,7 @@ var (
 var (
 	default_horizontal_limit = 50
 	groups_vertical_limit    = 6
-	lights_vertical_limit    = 10
+	lights_vertical_limit    = 8
 )
 
 // returns the element with spaces appended to it,

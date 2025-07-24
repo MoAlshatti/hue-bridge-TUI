@@ -175,7 +175,20 @@ func (m model) View() string {
 			}
 		}
 		grouppanel := view.Render_group_panel(groups, true)
-		return lipgloss.JoinVertical(lipgloss.Left, bridgepanel, grouppanel)
+
+		var lights []string
+		for i, v := range m.lights.Items {
+			if i == 0 {
+				lights = append(lights, view.Render_light_title(v.Metadata.Name, v.Dimming.Brightness, true))
+			} else {
+				if i == 5 {
+					break
+				}
+				lights = append(lights, view.Render_light_title(v.Metadata.Name, v.Dimming.Brightness, false))
+			}
+		}
+		lightpanel := view.Render_light_panel(lights, true)
+		return lipgloss.JoinVertical(lipgloss.Left, bridgepanel, grouppanel, lightpanel)
 	}
 	return " "
 }

@@ -19,6 +19,7 @@ type Light struct {
 	Type      string
 	Metadata  Metadata
 	Color     XyColor
+	Dimming   Dimming
 	ColorTemp ColorTemperature
 }
 
