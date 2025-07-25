@@ -1,5 +1,7 @@
 package bridge
 
+import "time"
+
 type AuthSuccess struct {
 	Success struct {
 		UserName string `json:"username"`
@@ -130,6 +132,67 @@ type ApiLights struct {
 				Mode string `json:"mode"`
 			} `json:"color"`
 		} `json:"powerup"`
+		Type string `json:"type"`
+	} `json:"data"`
+}
+
+type ApiScene struct {
+	Errors []ApiError `json:"errors"`
+	Data   []struct {
+		ID      string `json:"id"`
+		IDV1    string `json:"id_v1"`
+		Actions []struct {
+			Target struct {
+				Rid   string `json:"rid"`
+				Rtype string `json:"rtype"`
+			} `json:"target"`
+			Action struct {
+				On struct {
+					On bool `json:"on"`
+				} `json:"on"`
+				Dimming struct {
+					Brightness float64 `json:"brightness"`
+				} `json:"dimming"`
+				ColorTemperature struct {
+					Mirek int `json:"mirek"`
+				} `json:"color_temperature"`
+			} `json:"action"`
+		} `json:"actions"`
+		Palette struct {
+			Color   []any `json:"color"`
+			Dimming []struct {
+				Brightness float64 `json:"brightness"`
+			} `json:"dimming"`
+			ColorTemperature []struct {
+				ColorTemperature struct {
+					Mirek int `json:"mirek"`
+				} `json:"color_temperature"`
+				Dimming struct {
+					Brightness float64 `json:"brightness"`
+				} `json:"dimming"`
+			} `json:"color_temperature"`
+			Effects   []any `json:"effects"`
+			EffectsV2 []any `json:"effects_v2"`
+		} `json:"palette"`
+		Recall struct {
+		} `json:"recall"`
+		Metadata struct {
+			Name  string `json:"name"`
+			Image struct {
+				Rid   string `json:"rid"`
+				Rtype string `json:"rtype"`
+			} `json:"image"`
+		} `json:"metadata"`
+		Group struct {
+			Rid   string `json:"rid"`
+			Rtype string `json:"rtype"`
+		} `json:"group"`
+		Speed       float64 `json:"speed"`
+		AutoDynamic bool    `json:"auto_dynamic"`
+		Status      struct {
+			Active     string    `json:"active"`
+			LastRecall time.Time `json:"last_recall"`
+		} `json:"status"`
 		Type string `json:"type"`
 	} `json:"data"`
 }

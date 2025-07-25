@@ -64,6 +64,7 @@ func Fetch_lights(b Bridge, appkey string) tea.Cmd {
 			light.Dimming = v.Dimming
 			light.Color = v.Color.Xy
 			light.ColorTemp = v.ColorTemperature
+			light.On = v.On.On
 			lights = append(lights, light)
 		}
 
@@ -126,5 +127,67 @@ func Fetch_groups(b Bridge, appkey string) tea.Cmd {
 			}
 		}
 		return GroupsMsg(groups)
+	}
+}
+
+type ScenesMsg []Scene
+type FailedToFetchScenesMsg ErrMsg
+
+func Fetch_Scenes(b Bridge, appkey string) tea.Cmd {
+	return func() tea.Msg {
+
+		url := fmt.Sprintf("https://%s/clip/v2/resource/scene", b.Ip_addr)
+
+		ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+		defer cancel()
+
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+		if err != nil {
+			return FailedToFetchScenesMsg(ErrMsg{err})
+		}
+		set_header(req, appkey)
+
+		resp, err := client.Do(req)
+		if err != nil {
+			return FailedToFetchScenesMsg(ErrMsg{err})
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			return FailedToFetchScenesMsg(ErrMsg{fmt.Errorf("Failed To fetch scenes: %v", resp.Status)})
+		}
+
+		var ApiScenes ApiScene
+
+		decoder := json.NewDecoder(resp.Body)
+		defer resp.Body.Close()
+
+		err = decoder.Decode(&ApiScenes)
+		if err != nil {
+			return FailedToFetchScenesMsg(ErrMsg{err})
+		}
+
+		for _, v := range ApiScenes.Errors {
+			log.Println(v.Error.Description)
+		}
+
+		scenes := make([]Scene, 0, 10)
+
+		for _, scene := range ApiScenes.Data {
+			var newScene Scene
+
+			newScene.ID = scene.ID
+			switch scene.Status.Active {
+			case "inactive":
+				newScene.Active = false
+			case "active":
+				newScene.Active = true
+			}
+			newScene.LastRecall = scene.Status.LastRecall
+			newScene.Name = scene.Metadata.Name
+			newScene.Speed = scene.Speed
+
+			scenes = append(scenes, newScene)
+		}
+		return ScenesMsg(scenes)
 	}
 }

@@ -2,22 +2,28 @@ package view
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/charmbracelet/lipgloss"
 )
 
-func Render_light_title(title string, bri float64, selected bool) string {
+func Render_light_title(title string, bri float64, on bool, selected bool) string {
 	style := lipgloss.NewStyle()
 	selectedStyle := style.Background(white).Foreground(navy)
-	log.Println(bri)
+
 	brightness := fmt.Sprint(int(bri), `% `)
+	status := "OFF "
 
 	output := apply_horizontal_limit(title, default_horizontal_limit)
 
-	//adjusting the paddings for the brightness
-	output = output[:len(output)-len(brightness)]
-	output = output + brightness
+	if !on {
+		output = output[:len(output)-len(status)]
+		output = output + status
+	} else {
+		//adjusting the paddings for the brightness
+		output = output[:len(output)-len(brightness)]
+		output = output + brightness
+
+	}
 
 	if selected {
 		return selectedStyle.Render(output)

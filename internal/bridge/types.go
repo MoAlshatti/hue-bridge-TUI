@@ -1,5 +1,7 @@
 package bridge
 
+import "time"
+
 type Event int
 
 const (
@@ -20,6 +22,7 @@ type Light struct {
 	Metadata  Metadata
 	Color     XyColor
 	Dimming   Dimming
+	On        bool
 	ColorTemp ColorTemperature
 }
 
@@ -70,6 +73,20 @@ type Bridge struct {
 	Port     int    `json:"port"`
 	Selected bool
 	Info     []string
+}
+
+type Scene struct {
+	ID         string
+	Active     bool
+	LastRecall time.Time
+	Name       string
+	Speed      float64
+}
+
+type Scenes struct {
+	Items    []Scene
+	Selected bool
+	Cursor   int
 }
 
 // represents the user uesd for the API

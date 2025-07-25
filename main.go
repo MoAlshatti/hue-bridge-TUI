@@ -35,6 +35,7 @@ type model struct {
 	bridge   bridge.Bridge
 	user     bridge.User
 	groups   bridge.Groups
+	scenes   bridge.Scenes
 	lights   bridge.Lights
 	event    bridge.Event
 }
@@ -58,7 +59,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.win.width = msg.Width
 		m.win.height = msg.Height
 	case bridge.BridgeFoundMsg:
-		log.Println("Bridge Found, ", msg.Ip_addr)
 		m.bridge = bridge.Bridge(msg)
 		m.bridge.Selected = true
 		m.event = bridge.FindingUser
@@ -71,14 +71,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.event = bridge.RequestPressButton
 	case bridge.UserFoundMsg:
 		m.event = bridge.FetchingLights
-		log.Println("user found!")
 		m.user.Username = string(msg)
 
 		// retreive lights here
-		return m, tea.Batch(bridge.Fetch_lights(m.bridge, m.user.Username), bridge.Fetch_groups(m.bridge, m.user.Username)) // add fetch_bridge later
-
+		return m, tea.Batch(bridge.Fetch_lights(m.bridge, m.user.Username),
+			bridge.Fetch_groups(m.bridge, m.user.Username),
+			bridge.Fetch_Scenes(m.bridge, m.user.Username))
 		//start displaying
-
 	case bridge.ClientCreatedMsg:
 		return m, bridge.Find_bridges
 	case bridge.NoClientCreatedMsg:
@@ -87,7 +86,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case bridge.UserCreatedMsg:
 		m.user.Username = string(msg)
 		m.event = bridge.FetchingLights
-		return m, tea.Batch(bridge.Save_Username(string(msg)), bridge.Fetch_lights(m.bridge, m.user.Username), bridge.Fetch_groups(m.bridge, m.user.Username)) //add retreive bridge later
+		return m, tea.Batch(bridge.Save_Username(string(msg)),
+			bridge.Fetch_lights(m.bridge, m.user.Username),
+			bridge.Fetch_groups(m.bridge, m.user.Username),
+			bridge.Fetch_Scenes(m.bridge, m.user.Username))
 	case bridge.UserCreationFailedMsg:
 		log.Println("Failed to create user, err: ", bridge.ErrMsg(msg))
 		return m, tea.Quit
@@ -96,36 +98,37 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		log.Println(string(msg))
 
 	case bridge.FailedFetchingLightsMsg:
-		//
 		log.Println(bridge.ErrMsg(msg))
 		return m, tea.Quit
 	case bridge.LightsMsg:
-		//
 		m.lights.Items = []bridge.Light(msg)
 		m.event = bridge.DisplayingLights
-
 	case bridge.FailedToFetchGroupsMsg:
 		log.Println(bridge.ErrMsg(msg))
 		return m, tea.Quit
 	case bridge.GroupsMsg:
 		m.groups.Items = []bridge.Group(msg)
-		//
+	case bridge.FailedToFetchScenesMsg:
+		log.Println(bridge.ErrMsg(msg))
+		return m, tea.Quit
+	case bridge.ScenesMsg:
+		m.scenes.Items = []bridge.Scene(msg)
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		case "1":
-			m.groups.Selected, m.lights.Selected = false, false
+			m.groups.Selected, m.lights.Selected, m.scenes.Selected = false, false, false
 			m.bridge.Selected = true
 		case "2":
-			m.bridge.Selected, m.lights.Selected = false, false
+			m.bridge.Selected, m.lights.Selected, m.scenes.Selected = false, false, false
 			m.groups.Selected = true
 		case "3":
-			//
-			m.bridge.Selected, m.groups.Selected = false, false
+			m.bridge.Selected, m.groups.Selected, m.scenes.Selected = false, false, false
 			m.lights.Selected = true
 		case "4":
-			// select scenes panel
+			m.bridge.Selected, m.groups.Selected, m.lights.Selected = false, false, false
+			m.scenes.Selected = true
 		case "j", "down":
 			if m.groups.Selected {
 				if m.groups.Cursor < len(m.groups.Items)-1 {
@@ -134,6 +137,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else if m.lights.Selected {
 				if m.lights.Cursor < len(m.lights.Items)-1 {
 					m.lights.Cursor++
+				}
+			} else if m.scenes.Selected {
+				if m.scenes.Cursor < len(m.scenes.Items)-1 {
+					m.scenes.Cursor++
 				}
 			}
 		case "k", "up":
@@ -144,6 +151,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else if m.lights.Selected {
 				if m.lights.Cursor > 0 {
 					m.lights.Cursor--
+				}
+			} else if m.scenes.Selected {
+				if m.scenes.Cursor > 0 {
+					m.scenes.Cursor--
 				}
 			}
 
@@ -223,9 +234,9 @@ func (m model) View() string {
 		var lights []string
 		for i, v := range m.lights.Items {
 			if i == m.lights.Cursor {
-				lights = append(lights, view.Render_light_title(v.Metadata.Name, v.Dimming.Brightness, true))
+				lights = append(lights, view.Render_light_title(v.Metadata.Name, v.Dimming.Brightness, v.On, true))
 			} else {
-				lights = append(lights, view.Render_light_title(v.Metadata.Name, v.Dimming.Brightness, false))
+				lights = append(lights, view.Render_light_title(v.Metadata.Name, v.Dimming.Brightness, v.On, false))
 			}
 		}
 
