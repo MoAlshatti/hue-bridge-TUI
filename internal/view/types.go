@@ -15,11 +15,14 @@ var (
 
 var (
 	default_horizontal_limit = 50
-	groups_vertical_limit    = 6
-	lights_vertical_limit    = 8
+
+	groups_vertical_limit = 6
+	lights_vertical_limit = 8
+	scenes_vertical_limit = 6
 
 	max_groups_page_size = 6
 	max_lights_page_size = 8
+	max_scenes_page_size = 6
 )
 
 // returns the element with spaces appended to it,

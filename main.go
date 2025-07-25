@@ -195,59 +195,36 @@ func (m model) View() string {
 		var (
 			quitOpt, pressOpt string
 		)
-		if m.userpage.Cursor == bridge.Quit {
-			quitOpt = view.Render_userpage_options(m.userpage.Items[bridge.Quit], true)
-			pressOpt = view.Render_userpage_options(m.userpage.Items[bridge.PressTheButton], false)
-		} else {
-			quitOpt = view.Render_userpage_options(m.userpage.Items[bridge.Quit], false)
-			pressOpt = view.Render_userpage_options(m.userpage.Items[bridge.PressTheButton], true)
-		}
+		quitOpt = view.Render_userpage_options(m.userpage.Items[bridge.Quit], m.userpage.Cursor == bridge.Quit)
+		pressOpt = view.Render_userpage_options(m.userpage.Items[bridge.PressTheButton], m.userpage.Cursor != bridge.Quit)
+
 		userpage := view.Render_userpage(title, quitOpt, pressOpt)
 		return lipgloss.Place(m.win.width, m.win.height, lipgloss.Center, lipgloss.Center, userpage)
 	case bridge.DisplayingLights:
 		title := view.Render_bridge_title("Hue Bridge")
 
-		var bridgepanel string
-		if m.bridge.Selected {
-			bridgepanel = view.Render_bridge_panel(title, true)
-		} else {
-			bridgepanel = view.Render_bridge_panel(title, false)
-		}
+		bridgepanel := view.Render_bridge_panel(title, m.bridge.Selected)
 
 		var groups []string
 		for i, v := range m.groups.Items {
-			if i == m.groups.Cursor {
-
-				groups = append(groups, view.Render_group_title(v.Metadata.Name, true))
-			} else {
-				groups = append(groups, view.Render_group_title(v.Metadata.Name, false))
-			}
+			groups = append(groups, view.Render_group_title(v.Metadata.Name, i == m.groups.Cursor))
 		}
-		var grouppanel string
-		if m.groups.Selected {
-			grouppanel = view.Render_group_panel(groups, true, m.groups.Cursor)
-		} else {
-
-			grouppanel = view.Render_group_panel(groups, false, m.groups.Cursor)
-		}
+		grouppanel := view.Render_group_panel(groups, m.groups.Selected, m.groups.Cursor)
 
 		var lights []string
 		for i, v := range m.lights.Items {
-			if i == m.lights.Cursor {
-				lights = append(lights, view.Render_light_title(v.Metadata.Name, v.Dimming.Brightness, v.On, true))
-			} else {
-				lights = append(lights, view.Render_light_title(v.Metadata.Name, v.Dimming.Brightness, v.On, false))
-			}
+			lights = append(lights, view.Render_light_title(v.Metadata.Name, v.Dimming.Brightness, v.On, i == m.lights.Cursor))
 		}
 
-		var lightpanel string
-		if m.lights.Selected {
-			lightpanel = view.Render_light_panel(lights, true, m.lights.Cursor)
-		} else {
+		lightpanel := view.Render_light_panel(lights, m.lights.Selected, m.lights.Cursor)
 
-			lightpanel = view.Render_light_panel(lights, false, m.lights.Cursor)
+		var scenes []string
+		for i, v := range m.scenes.Items {
+			scenes = append(scenes, view.Render_scene_title(v.Name, v.Active, i == m.scenes.Cursor))
 		}
-		return lipgloss.JoinVertical(lipgloss.Left, bridgepanel, grouppanel, lightpanel)
+
+		scenePanel := view.Render_scene_panel(scenes, m.scenes.Selected, m.scenes.Cursor)
+		return lipgloss.JoinVertical(lipgloss.Left, bridgepanel, grouppanel, lightpanel, scenePanel)
 	}
 	return " "
 }
