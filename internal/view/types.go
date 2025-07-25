@@ -15,10 +15,12 @@ var (
 
 var (
 	default_horizontal_limit = 50
+	details_horizontal_limit = 80
 
-	groups_vertical_limit = 8
-	lights_vertical_limit = 10
-	scenes_vertical_limit = 8
+	groups_vertical_limit  = 8
+	lights_vertical_limit  = 10
+	scenes_vertical_limit  = 8
+	details_vertical_limit = 23
 
 	max_groups_page_size = 8
 	max_lights_page_size = 10

@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strconv"
 
 	"github.com/MoAlshatti/hue-bridge-TUI/internal/bridge"
 	"github.com/MoAlshatti/hue-bridge-TUI/internal/view"
@@ -215,7 +216,6 @@ func (m model) View() string {
 				v.Dimming.Brightness,
 				v.On, i == m.lights.Cursor && m.lights.Selected))
 		}
-
 		lightpanel := view.Render_light_panel(lights, m.lights.Selected, m.lights.Cursor)
 
 		var scenes []string
@@ -224,9 +224,27 @@ func (m model) View() string {
 				v.Active,
 				i == m.scenes.Cursor && m.scenes.Selected))
 		}
-
 		scenePanel := view.Render_scene_panel(scenes, m.scenes.Selected, m.scenes.Cursor)
-		return lipgloss.JoinVertical(lipgloss.Left, bridgepanel, grouppanel, lightpanel, scenePanel)
+
+		var details []string
+		if m.bridge.Selected {
+			details = append(details, view.Render_bridge_details("Bridge IP: ", m.bridge.Ip_addr))
+			details = append(details, view.Render_bridge_details("Bridge Ports:", strconv.Itoa(m.bridge.Port)))
+			details = append(details, view.Render_bridge_details("Bridge ID: ", m.bridge.ID))
+
+		} else if m.groups.Selected {
+			//
+		} else if m.lights.Selected {
+			//
+		} else if m.scenes.Selected {
+			//
+		}
+
+		detailsPanel := view.Render_details_panel(details)
+		output := lipgloss.JoinVertical(lipgloss.Left, bridgepanel, grouppanel, lightpanel, scenePanel)
+
+		output = lipgloss.JoinHorizontal(lipgloss.Top, output, detailsPanel)
+		return output
 	}
 	return " "
 }

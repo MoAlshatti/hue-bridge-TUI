@@ -8,6 +8,7 @@ func Render_bridge_title(title string) string {
 	style := lipgloss.NewStyle()
 
 	return style.Render(apply_horizontal_limit(title, default_horizontal_limit))
+
 }
 func Render_bridge_panel(title string, selected bool) string {
 	border := lipgloss.RoundedBorder()
@@ -20,4 +21,10 @@ func Render_bridge_panel(title string, selected bool) string {
 		return selectedStyle.Render(title)
 	}
 	return defaultStyle.Render(title)
+}
+
+func Render_bridge_details(prefix, title string) string {
+	style := lipgloss.NewStyle().Italic(true)
+
+	return style.Render(apply_horizontal_limit(prefix+title, details_horizontal_limit))
 }
