@@ -24,12 +24,19 @@ func Render_group_panel(elems []string, selected bool, cursor int) string {
 	if len(elems) > max_groups_page_size {
 		pagesize := min(max_groups_page_size, len(elems))
 		if cursor%pagesize == 0 {
-			elems = elems[cursor : cursor+pagesize]
+			if cursor+pagesize > len(elems) {
+				elems = elems[cursor:]
+			} else {
+				elems = elems[cursor : cursor+pagesize]
+			}
 		} else {
 			start := cursor - cursor%pagesize
-			elems = elems[start : start+pagesize]
+			if start+pagesize > len(elems) {
+				elems = elems[start:]
+			} else {
+				elems = elems[start : start+pagesize]
+			}
 		}
-
 	}
 
 	elems = apply_vertical_limit(elems, groups_vertical_limit)

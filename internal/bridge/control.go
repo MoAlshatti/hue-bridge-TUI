@@ -179,7 +179,7 @@ func Fetch_Scenes(b Bridge, appkey string) tea.Cmd {
 			switch scene.Status.Active {
 			case "inactive":
 				newScene.Active = false
-			case "active":
+			default:
 				newScene.Active = true
 			}
 			newScene.LastRecall = scene.Status.LastRecall

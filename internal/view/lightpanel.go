@@ -38,14 +38,22 @@ func Render_light_panel(elems []string, selected bool, cursor int) string {
 	selectedStyle := defaultStyle.BorderForeground(cyan)
 
 	if len(elems) > max_lights_page_size {
-		pageSize := min(max_lights_page_size, len(elems))
+		pageSize := min(max_lights_page_size, len(elems)) // seems useless rn, remove later
 		if cursor%pageSize == 0 {
-			elems = elems[cursor : cursor+pageSize]
+			if cursor+pageSize > len(elems) {
+				elems = elems[cursor:]
+			} else {
+				elems = elems[cursor : cursor+pageSize]
+			}
 		} else {
 			start := cursor - cursor%pageSize
-			elems = elems[start:(start + pageSize)]
-		}
+			if start+pageSize > len(elems) {
 
+				elems = elems[start:]
+			} else {
+				elems = elems[start : start+pageSize]
+			}
+		}
 	}
 
 	new_elems := apply_vertical_limit(elems, lights_vertical_limit)

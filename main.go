@@ -93,10 +93,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case bridge.UserCreationFailedMsg:
 		log.Println("Failed to create user, err: ", bridge.ErrMsg(msg))
 		return m, tea.Quit
-
 	case bridge.ButtonNotPressed:
 		log.Println(string(msg))
-
 	case bridge.FailedFetchingLightsMsg:
 		log.Println(bridge.ErrMsg(msg))
 		return m, tea.Quit
@@ -213,14 +211,18 @@ func (m model) View() string {
 
 		var lights []string
 		for i, v := range m.lights.Items {
-			lights = append(lights, view.Render_light_title(v.Metadata.Name, v.Dimming.Brightness, v.On, i == m.lights.Cursor))
+			lights = append(lights, view.Render_light_title(v.Metadata.Name,
+				v.Dimming.Brightness,
+				v.On, i == m.lights.Cursor && m.lights.Selected))
 		}
 
 		lightpanel := view.Render_light_panel(lights, m.lights.Selected, m.lights.Cursor)
 
 		var scenes []string
 		for i, v := range m.scenes.Items {
-			scenes = append(scenes, view.Render_scene_title(v.Name, v.Active, i == m.scenes.Cursor))
+			scenes = append(scenes, view.Render_scene_title(v.Name,
+				v.Active,
+				i == m.scenes.Cursor && m.scenes.Selected))
 		}
 
 		scenePanel := view.Render_scene_panel(scenes, m.scenes.Selected, m.scenes.Cursor)

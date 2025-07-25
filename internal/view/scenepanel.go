@@ -6,7 +6,7 @@ func Render_scene_title(title string, on, selected bool) string {
 	style := lipgloss.NewStyle()
 	selectedStyle := style.Background(white).Foreground(navy)
 
-	status := "Inactive "
+	status := ""
 
 	if on {
 		status = "Active "
@@ -33,12 +33,19 @@ func Render_scene_panel(elems []string, selected bool, cursor int) string {
 	if len(elems) > max_scenes_page_size {
 		pageSize := min(max_scenes_page_size, len(elems))
 		if cursor%pageSize == 0 {
-			elems = elems[cursor : cursor+pageSize]
+			if cursor+pageSize > len(elems) {
+				elems = elems[cursor:]
+			} else {
+				elems = elems[cursor : cursor+pageSize]
+			}
 		} else {
 			start := cursor - cursor%pageSize
-			elems = elems[start:(start + pageSize)]
+			if cursor+pageSize > len(elems) {
+				elems = elems[start:]
+			} else {
+				elems = elems[start:(start + pageSize)]
+			}
 		}
-
 	}
 
 	new_elems := apply_vertical_limit(elems, scenes_vertical_limit)
