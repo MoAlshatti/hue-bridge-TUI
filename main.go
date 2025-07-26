@@ -200,36 +200,38 @@ func (m model) View() string {
 		userpage := view.Render_userpage(title, quitOpt, pressOpt)
 		return lipgloss.Place(m.win.width, m.win.height, lipgloss.Center, lipgloss.Center, userpage)
 	case bridge.DisplayingLights:
-		title := view.Render_bridge_title("Hue Bridge")
+		title := view.Render_bridge_title("Hue Bridge", m.win.width, m.win.height)
 
-		bridgepanel := view.Render_bridge_panel(title, m.bridge.Selected)
+		bridgepanel := view.Render_bridge_panel(title, m.bridge.Selected, m.win.width, m.win.height)
 
 		var groups []string
 		for i, v := range m.groups.Items {
-			groups = append(groups, view.Render_group_title(v.Metadata.Name, i == m.groups.Cursor))
+			groups = append(groups, view.Render_group_title(v.Metadata.Name, i == m.groups.Cursor, m.win.width, m.win.height))
 		}
-		grouppanel := view.Render_group_panel(groups, m.groups.Selected, m.groups.Cursor)
+		grouppanel := view.Render_group_panel(groups, m.groups.Selected, m.groups.Cursor, m.win.width, m.win.height)
 
 		var lights []string
 		for i, v := range m.lights.Items {
 			lights = append(lights, view.Render_light_title(v.Metadata.Name,
 				v.Dimming.Brightness,
-				v.On, i == m.lights.Cursor && m.lights.Selected))
+				v.On, i == m.lights.Cursor && m.lights.Selected, m.win.width, m.win.height))
 		}
-		lightpanel := view.Render_light_panel(lights, m.lights.Selected, m.lights.Cursor)
+		lightpanel := view.Render_light_panel(lights, m.lights.Selected, m.lights.Cursor, m.win.width, m.win.height)
 
 		var scenes []string
 		for i, v := range m.scenes.Items {
 			scenes = append(scenes, view.Render_scene_title(v.Name,
 				v.Active,
-				i == m.scenes.Cursor && m.scenes.Selected))
+				i == m.scenes.Cursor && m.scenes.Selected, m.win.width, m.win.height))
 		}
-		scenePanel := view.Render_scene_panel(scenes, m.scenes.Selected, m.scenes.Cursor)
+		scenePanel := view.Render_scene_panel(scenes, m.scenes.Selected, m.scenes.Cursor, m.win.width, m.win.height)
 
 		var details []string
 		if m.bridge.Selected {
 			details = append(details, view.Render_bridge_details("Bridge IP: ", m.bridge.Ip_addr))
+			details = append(details, "") // A dirty cheap trick, but i cant be arsed </3
 			details = append(details, view.Render_bridge_details("Bridge Ports:", strconv.Itoa(m.bridge.Port)))
+			details = append(details, "")
 			details = append(details, view.Render_bridge_details("Bridge ID: ", m.bridge.ID))
 
 		} else if m.groups.Selected {
@@ -240,10 +242,10 @@ func (m model) View() string {
 			//
 		}
 
-		detailsPanel := view.Render_details_panel(details)
+		//detailsPanel := view.Render_details_panel(details)
 		output := lipgloss.JoinVertical(lipgloss.Left, bridgepanel, grouppanel, lightpanel, scenePanel)
 
-		output = lipgloss.JoinHorizontal(lipgloss.Top, output, detailsPanel)
+		output = lipgloss.JoinHorizontal(lipgloss.Top, output) //add details panel afterwards
 		return output
 	}
 	return " "

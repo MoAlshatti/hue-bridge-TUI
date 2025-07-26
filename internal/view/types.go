@@ -14,17 +14,8 @@ var (
 )
 
 var (
-	default_horizontal_limit = 50
 	details_horizontal_limit = 80
-
-	groups_vertical_limit  = 8
-	lights_vertical_limit  = 10
-	scenes_vertical_limit  = 8
-	details_vertical_limit = 23
-
-	max_groups_page_size = 8
-	max_lights_page_size = 10
-	max_scenes_page_size = 8
+	details_vertical_limit   = 23
 )
 
 // returns the element with spaces appended to it,
@@ -47,4 +38,30 @@ func apply_vertical_limit(list []string, lim int) []string {
 		list = append(list, " ")
 	}
 	return list
+}
+
+func get_lightpanel_width(width int) int {
+	return (width / 3) + (width / 14)
+}
+func get_bridgepanel_width(width int) int {
+	return get_lightpanel_width(width)
+}
+func get_grouppanel_width(width int) int {
+	return get_lightpanel_width(width)
+}
+func get_scenepanel_width(width int) int {
+	return get_lightpanel_width(width)
+}
+
+func get_bridgepanel_height(height int) int {
+	return height / 25
+}
+func get_lightpanel_height(height int) int {
+	return int(0.25 * float64(height))
+}
+func get_grouppanel_height(height int) int {
+	return int(0.25 * float64(height))
+}
+func get_scenepanel_height(height int) int {
+	return int(0.25 * float64(height))
 }

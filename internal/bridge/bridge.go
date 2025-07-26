@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -32,6 +33,8 @@ func Find_bridges() tea.Msg {
 			return NoBridgeFoundMsg(ErrMsg{err})
 		}
 	}
+
+	brdgs[0].ID, _ = strings.CutPrefix(brdgs[0].ID, "bridgeid=")
 	// 3- return the list of bridges
 	return BridgeFoundMsg(brdgs[0])
 }

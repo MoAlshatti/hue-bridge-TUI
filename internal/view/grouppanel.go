@@ -4,25 +4,30 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-func Render_group_title(title string, selected bool) string {
-	defaultStyle := lipgloss.NewStyle()
+func Render_group_title(title string, selected bool, width, height int) string {
+	defaultStyle := lipgloss.NewStyle().Width(get_grouppanel_width(width))
 	selectedStyle := defaultStyle.Background(white).Foreground(navy)
 
 	if selected {
-		return selectedStyle.Render(apply_horizontal_limit(title, default_horizontal_limit))
+		return selectedStyle.Render(title)
 	}
-	return defaultStyle.Render(apply_horizontal_limit(title, default_horizontal_limit))
+	return defaultStyle.Render(title)
 }
-func Render_group_panel(elems []string, selected bool, cursor int) string {
+func Render_group_panel(elems []string, selected bool, cursor, width, height int) string {
 
 	border := lipgloss.RoundedBorder()
 	border.TopLeft = "2" // gotta find a better way to title borders
 
-	defaultStyle := lipgloss.NewStyle().Border(border).Margin(0, 1).PaddingLeft(1)
+	defaultStyle := lipgloss.NewStyle().
+		Border(border).
+		Margin(0, 1).
+		PaddingLeft(1).
+		Height(get_grouppanel_height(height))
 	selectedStyle := defaultStyle.BorderForeground(cyan)
 
-	if len(elems) > max_groups_page_size {
-		pagesize := min(max_groups_page_size, len(elems))
+	//consider making a function that does this shit
+	if len(elems) > get_grouppanel_height(height) {
+		pagesize := get_grouppanel_height(height)
 		if cursor%pagesize == 0 {
 			if cursor+pagesize > len(elems) {
 				elems = elems[cursor:]
@@ -38,8 +43,6 @@ func Render_group_panel(elems []string, selected bool, cursor int) string {
 			}
 		}
 	}
-
-	elems = apply_vertical_limit(elems, groups_vertical_limit)
 
 	items := lipgloss.JoinVertical(lipgloss.Left, elems...)
 

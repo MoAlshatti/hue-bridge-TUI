@@ -2,9 +2,7 @@ package view
 
 import "github.com/charmbracelet/lipgloss"
 
-func Render_scene_title(title string, on, selected bool) string {
-	style := lipgloss.NewStyle()
-	selectedStyle := style.Background(white).Foreground(navy)
+func Render_scene_title(title string, on, selected bool, width, height int) string {
 
 	status := ""
 
@@ -12,26 +10,31 @@ func Render_scene_title(title string, on, selected bool) string {
 		status = "Active "
 	}
 
-	output := apply_horizontal_limit(title, default_horizontal_limit)
+	style := lipgloss.NewStyle().Width(get_scenepanel_width(width) - len(status))
+	selectedStyle := style.Background(white).Foreground(navy)
 
-	output = output[:len(output)-len(status)]
-	output = output + status
+	statusStyle := lipgloss.NewStyle().Align(lipgloss.Right).Width(len(status))
+	selectedStatusStyle := statusStyle.Background(white).Foreground(navy)
 
 	if selected {
-		return selectedStyle.Render(output)
+		return lipgloss.JoinHorizontal(lipgloss.Right, selectedStyle.Render(title), selectedStatusStyle.Render(status))
 	}
-	return style.Render(output)
+	return lipgloss.JoinHorizontal(lipgloss.Right, style.Render(title), statusStyle.Render(status))
 }
 
-func Render_scene_panel(elems []string, selected bool, cursor int) string {
+func Render_scene_panel(elems []string, selected bool, cursor, width, height int) string {
 	border := lipgloss.RoundedBorder()
 	border.TopLeft = "4"
 
-	defaultStyle := lipgloss.NewStyle().Border(border).Margin(0, 1).PaddingLeft(1)
+	defaultStyle := lipgloss.NewStyle().
+		Border(border).
+		Margin(0, 1).
+		PaddingLeft(1).
+		Height(get_scenepanel_height(height))
 	selectedStyle := defaultStyle.BorderForeground(cyan)
 
-	if len(elems) > max_scenes_page_size {
-		pageSize := min(max_scenes_page_size, len(elems))
+	if len(elems) > get_scenepanel_height(height) {
+		pageSize := get_scenepanel_height(height)
 		if cursor%pageSize == 0 {
 			if cursor+pageSize > len(elems) {
 				elems = elems[cursor:]
@@ -48,9 +51,7 @@ func Render_scene_panel(elems []string, selected bool, cursor int) string {
 		}
 	}
 
-	new_elems := apply_vertical_limit(elems, scenes_vertical_limit)
-
-	items := lipgloss.JoinVertical(lipgloss.Left, new_elems...)
+	items := lipgloss.JoinVertical(lipgloss.Left, elems...)
 
 	if selected {
 		return selectedStyle.Render(items)

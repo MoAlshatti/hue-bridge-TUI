@@ -6,39 +6,41 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-func Render_light_title(title string, bri float64, on bool, selected bool) string {
-	style := lipgloss.NewStyle()
+func Render_light_title(title string, bri float64, on bool, selected bool, width, height int) string {
+
+	status := ""
+	if !on {
+		status = "OFF "
+	} else {
+		status = fmt.Sprint(int(bri), "% ")
+	}
+
+	style := lipgloss.NewStyle().Width((get_lightpanel_width(width)) - len(status))
 	selectedStyle := style.Background(white).Foreground(navy)
 
-	brightness := fmt.Sprint(int(bri), `% `)
-	status := "OFF "
-
-	output := apply_horizontal_limit(title, default_horizontal_limit)
-
-	if !on {
-		output = output[:len(output)-len(status)]
-		output = output + status
-	} else {
-		//adjusting the paddings for the brightness
-		output = output[:len(output)-len(brightness)]
-		output = output + brightness
-	}
+	statusStyle := lipgloss.NewStyle().Align(lipgloss.Right).Width(len(status))
+	selectedStatusStyle := statusStyle.Background(white).Foreground(navy)
 
 	if selected {
-		return selectedStyle.Render(output)
+		return lipgloss.JoinHorizontal(lipgloss.Right, selectedStyle.Render(title), selectedStatusStyle.Render(status))
 	}
-	return style.Render(output)
+	return lipgloss.JoinHorizontal(lipgloss.Right, style.Render(title), statusStyle.Render(status))
 }
 
-func Render_light_panel(elems []string, selected bool, cursor int) string {
+func Render_light_panel(elems []string, selected bool, cursor, width, height int) string {
 	border := lipgloss.RoundedBorder()
 	border.TopLeft = "3"
 
-	defaultStyle := lipgloss.NewStyle().Border(border).Margin(0, 1).PaddingLeft(1)
+	defaultStyle := lipgloss.NewStyle().
+		Border(border).
+		Margin(0, 1).
+		PaddingLeft(1).
+		Height(get_lightpanel_height(height))
+
 	selectedStyle := defaultStyle.BorderForeground(cyan)
 
-	if len(elems) > max_lights_page_size {
-		pageSize := min(max_lights_page_size, len(elems)) // seems useless rn, remove later
+	if len(elems) > get_lightpanel_height(height) {
+		pageSize := get_lightpanel_height(height)
 		if cursor%pageSize == 0 {
 			if cursor+pageSize > len(elems) {
 				elems = elems[cursor:]
@@ -56,9 +58,7 @@ func Render_light_panel(elems []string, selected bool, cursor int) string {
 		}
 	}
 
-	new_elems := apply_vertical_limit(elems, lights_vertical_limit)
-
-	items := lipgloss.JoinVertical(lipgloss.Left, new_elems...)
+	items := lipgloss.JoinVertical(lipgloss.Left, elems...)
 
 	if selected {
 		return selectedStyle.Render(items)
