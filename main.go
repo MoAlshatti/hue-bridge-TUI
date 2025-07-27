@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"strconv"
 
 	"github.com/MoAlshatti/hue-bridge-TUI/internal/bridge"
 	"github.com/MoAlshatti/hue-bridge-TUI/internal/view"
@@ -226,19 +225,11 @@ func (m model) View() string {
 		}
 		scenePanel := view.Render_scene_panel(scenes, m.scenes.Selected, m.scenes.Cursor, m.win.width, m.win.height)
 
-		var details []string
+		var details string
 		if m.bridge.Selected {
-			details = append(details, view.Render_bridge_details("Bridge IP: ", m.bridge.Ip_addr, m.win.width, m.win.height))
-			details = append(details, "") // A dirty cheap trick, but i cant be arsed </3
-			details = append(details, view.Render_bridge_details("Bridge Ports:",
-				strconv.Itoa(m.bridge.Port),
-				m.win.width,
-				m.win.height))
-			details = append(details, "")
-			details = append(details, view.Render_bridge_details("Bridge ID: ", m.bridge.ID, m.win.width, m.win.height))
-
+			details = view.Render_bridge_details(m.bridge, m.win.width, m.win.height)
 		} else if m.groups.Selected {
-			//
+			details = view.Render_group_details(m.groups.Items[m.groups.Cursor], m.win.width, m.win.height)
 		} else if m.lights.Selected {
 			//
 		} else if m.scenes.Selected {

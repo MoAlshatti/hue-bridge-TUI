@@ -1,6 +1,9 @@
 package view
 
 import (
+	"fmt"
+
+	"github.com/MoAlshatti/hue-bridge-TUI/internal/bridge"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -29,10 +32,16 @@ func Render_bridge_panel(title string, selected bool, width, height int) string 
 	return defaultStyle.Render(title)
 }
 
-func Render_bridge_details(prefix, title string, width, height int) string {
+func Render_bridge_details(b bridge.Bridge, width, height int) string {
 	style := lipgloss.NewStyle().
 		Italic(true).
+		Bold(true).
 		Width(get_detailspanel_width(width))
 
-	return style.Render(prefix + title)
+	id := style.Render(fmt.Sprintln("Bridge ID: ", b.ID))
+	ip := style.Render(fmt.Sprintln("Bridge IP: ", b.Ip_addr))
+	port := style.Render(fmt.Sprintln("Port: ", b.Port))
+
+	return lipgloss.JoinVertical(lipgloss.Left, id, ip, port)
+
 }
