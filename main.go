@@ -228,11 +228,14 @@ func (m model) View() string {
 
 		var details []string
 		if m.bridge.Selected {
-			details = append(details, view.Render_bridge_details("Bridge IP: ", m.bridge.Ip_addr))
+			details = append(details, view.Render_bridge_details("Bridge IP: ", m.bridge.Ip_addr, m.win.width, m.win.height))
 			details = append(details, "") // A dirty cheap trick, but i cant be arsed </3
-			details = append(details, view.Render_bridge_details("Bridge Ports:", strconv.Itoa(m.bridge.Port)))
+			details = append(details, view.Render_bridge_details("Bridge Ports:",
+				strconv.Itoa(m.bridge.Port),
+				m.win.width,
+				m.win.height))
 			details = append(details, "")
-			details = append(details, view.Render_bridge_details("Bridge ID: ", m.bridge.ID))
+			details = append(details, view.Render_bridge_details("Bridge ID: ", m.bridge.ID, m.win.width, m.win.height))
 
 		} else if m.groups.Selected {
 			//
@@ -242,10 +245,10 @@ func (m model) View() string {
 			//
 		}
 
-		//detailsPanel := view.Render_details_panel(details)
+		detailsPanel := view.Render_details_panel(details, m.win.width, m.win.height)
 		output := lipgloss.JoinVertical(lipgloss.Left, bridgepanel, grouppanel, lightpanel, scenePanel)
 
-		output = lipgloss.JoinHorizontal(lipgloss.Top, output) //add details panel afterwards
+		output = lipgloss.JoinHorizontal(lipgloss.Top, output, detailsPanel) //add details panel afterwards
 		return output
 	}
 	return " "

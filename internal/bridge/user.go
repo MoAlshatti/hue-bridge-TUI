@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -28,7 +27,6 @@ func Find_User(b Bridge) tea.Cmd {
 			return NoUserFoundMsg(ErrMsg{err})
 		}
 		url := fmt.Sprintf("https://%s/clip/v2/resource/bridge", b.Ip_addr)
-		log.Println(username)
 
 		req, cancel, err := create_finduser_req(url, string(username))
 		if err != nil {

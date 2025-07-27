@@ -29,8 +29,10 @@ func Render_bridge_panel(title string, selected bool, width, height int) string 
 	return defaultStyle.Render(title)
 }
 
-func Render_bridge_details(prefix, title string) string {
-	style := lipgloss.NewStyle().Italic(true)
+func Render_bridge_details(prefix, title string, width, height int) string {
+	style := lipgloss.NewStyle().
+		Italic(true).
+		Width(get_detailspanel_width(width))
 
-	return style.Render(apply_horizontal_limit(prefix+title, details_horizontal_limit))
+	return style.Render(prefix + title)
 }

@@ -2,10 +2,13 @@ package view
 
 import "github.com/charmbracelet/lipgloss"
 
-func Render_details_panel(elems []string) string {
-	style := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).Margin(0, 3).PaddingLeft(1).MarginTop(1).MarginRight(3)
-
-	elems = apply_vertical_limit(elems, details_vertical_limit)
+func Render_details_panel(elems []string, width, height int) string {
+	style := lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		PaddingLeft(1).
+		MarginTop(1).
+		MarginRight(3).
+		Height(get_detailspanel_height(height))
 
 	items := lipgloss.JoinVertical(lipgloss.Left, elems...)
 
