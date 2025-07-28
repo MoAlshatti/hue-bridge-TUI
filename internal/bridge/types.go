@@ -22,6 +22,9 @@ type Light struct {
 	Metadata  Metadata
 	Color     XyColor
 	Dimming   Dimming
+	Preset    string
+	MirekMax  int
+	MirekMin  int
 	On        bool
 	ColorTemp ColorTemperature
 }
@@ -76,11 +79,13 @@ type Bridge struct {
 }
 
 type Scene struct {
-	ID         string
-	Active     bool
-	LastRecall time.Time
-	Name       string
-	Speed      float64
+	ID          string
+	Active      bool
+	LastRecall  time.Time
+	Group_Rid   string
+	Group_Rtype string
+	Name        string
+	Speed       float64
 }
 
 type Scenes struct {

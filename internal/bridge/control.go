@@ -63,6 +63,9 @@ func Fetch_lights(b Bridge, appkey string) tea.Cmd {
 			light.Metadata = v.Metadata
 			light.Dimming = v.Dimming
 			light.Color = v.Color.Xy
+			light.Preset = v.Powerup.Preset
+			light.MirekMax = v.ColorTemperature.MirekSchema.MirekMaximum
+			light.MirekMin = v.ColorTemperature.MirekSchema.MirekMinimum
 			light.ColorTemp = v.ColorTemperature
 			light.On = v.On.On
 			lights = append(lights, light)
@@ -185,6 +188,8 @@ func Fetch_Scenes(b Bridge, appkey string) tea.Cmd {
 			newScene.LastRecall = scene.Status.LastRecall
 			newScene.Name = scene.Metadata.Name
 			newScene.Speed = scene.Speed
+			newScene.Group_Rid = scene.Group.Rid
+			newScene.Group_Rtype = scene.Group.Rtype
 
 			scenes = append(scenes, newScene)
 		}

@@ -1,6 +1,13 @@
 package view
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"fmt"
+	"strings"
+	"time"
+
+	"github.com/MoAlshatti/hue-bridge-TUI/internal/bridge"
+	"github.com/charmbracelet/lipgloss"
+)
 
 func Render_scene_title(title string, on, selected bool, width, height int) string {
 
@@ -58,4 +65,35 @@ func Render_scene_panel(elems []string, selected bool, cursor, width, height int
 	}
 	return defaultStyle.Render(items)
 
+}
+
+func Render_scene_details(s bridge.Scene, width, height int) string {
+	style := lipgloss.NewStyle().
+		Italic(true).
+		Bold(true).
+		Width(get_detailspanel_width(width))
+
+	name := style.Render(fmt.Sprintln("Name: ", s.Name))
+	id := style.Render(fmt.Sprintln("ID: ", s.ID))
+	active := style.Render(fmt.Sprintln("Active: ", s.Active))
+	speed := style.Render(fmt.Sprintln("Speed: ", s.Speed))
+	lastrecall := style.Render(fmt.Sprintln("Last Recall: ", s.LastRecall.Format(time.RFC850)))
+	var group []string
+	group = append(group, style.Render(fmt.Sprint("Group Information: ")))
+	group = append(group, style.Render(fmt.Sprint("Rid: ", s.Group_Rid)))
+	group = append(group, style.Render(fmt.Sprintln("Rtype: ", s.Group_Rtype)))
+
+	output := lipgloss.JoinVertical(lipgloss.Left,
+		name,
+		id,
+		active,
+		lipgloss.JoinVertical(lipgloss.Left, group...),
+		speed,
+		lastrecall)
+
+	if lipgloss.Height(output) >= get_detailspanel_height(height) {
+		output_array := strings.Split(output, "\n")
+		return lipgloss.JoinVertical(lipgloss.Left, output_array[:get_detailspanel_height(height)]...)
+	}
+	return output
 }

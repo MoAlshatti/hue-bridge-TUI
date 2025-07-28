@@ -231,15 +231,16 @@ func (m model) View() string {
 		} else if m.groups.Selected {
 			details = view.Render_group_details(m.groups.Items[m.groups.Cursor], m.win.width, m.win.height)
 		} else if m.lights.Selected {
-			//
+			details = view.Render_light_details(m.lights.Items[m.lights.Cursor], m.win.width, m.win.height)
 		} else if m.scenes.Selected {
 			//
+			details = view.Render_scene_details(m.scenes.Items[m.scenes.Cursor], m.win.width, m.win.height)
 		}
 
 		detailsPanel := view.Render_details_panel(details, m.win.width, m.win.height)
 		output := lipgloss.JoinVertical(lipgloss.Left, bridgepanel, grouppanel, lightpanel, scenePanel)
 
-		output = lipgloss.JoinHorizontal(lipgloss.Top, output, detailsPanel) //add details panel afterwards
+		output = lipgloss.JoinHorizontal(lipgloss.Top, output, detailsPanel)
 		return output
 	}
 	return " "

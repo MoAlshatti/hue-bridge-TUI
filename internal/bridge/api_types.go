@@ -29,7 +29,7 @@ type ColorTemperature struct {
 	MirekSchema struct {
 		MirekMinimum int `json:"mirek_minimum"`
 		MirekMaximum int `json:"mirek_maximum"`
-	}
+	} `json:"mirek_schema"`
 }
 type XyColor struct {
 	X float64 `json:"x"`
