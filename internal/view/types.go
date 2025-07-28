@@ -26,6 +26,9 @@ func get_scenepanel_width(width int) int {
 func get_detailspanel_width(width int) int {
 	return (width / 2) + (width / 21)
 }
+func get_logpanel_width(width int) int {
+	return get_detailspanel_width(width)
+}
 
 func get_bridgepanel_height(height int) int {
 	return height / 25
@@ -41,4 +44,7 @@ func get_scenepanel_height(height int) int {
 }
 func get_detailspanel_height(height int) int {
 	return get_bridgepanel_height(height) + get_grouppanel_height(height) + get_lightpanel_height(height) + (height / 10)
+}
+func get_logpanel_height(height int) int {
+	return (get_detailspanel_height(height) / 3) + get_detailspanel_height(height)/10
 }

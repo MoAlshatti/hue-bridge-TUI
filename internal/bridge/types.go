@@ -100,7 +100,7 @@ type User struct {
 }
 
 type ErrMsg struct {
-	err error
+	Err error
 }
 
-func (e ErrMsg) Error() string { return e.err.Error() }
+func (e ErrMsg) Error() string { return e.Err.Error() }

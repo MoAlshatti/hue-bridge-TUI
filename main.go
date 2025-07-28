@@ -27,10 +27,15 @@ type window struct {
 	height int
 }
 
+type logFile struct {
+	content string
+}
+
 // The lights are different for each bridge, we need to handle that, maybe update lights when we choose another bridge in the update method
 // or we coudld move lights and groups to the bridge struct!
 type model struct {
 	win      window
+	log      logFile
 	userpage bridge.UserPage
 	bridge   bridge.Bridge
 	user     bridge.User
@@ -58,6 +63,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.win.width = msg.Width
 		m.win.height = msg.Height
+	case view.FailedReadingLogMsg:
+		log.Println(bridge.ErrMsg(msg))
+		m.log.content = "Couldnt Read the Logs"
+	case view.LogFileMsg:
+		m.log.content = string(msg)
 	case bridge.BridgeFoundMsg:
 		m.bridge = bridge.Bridge(msg)
 		m.bridge.Selected = true
@@ -73,11 +83,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.event = bridge.FetchingLights
 		m.user.Username = string(msg)
 
-		// retreive lights here
 		return m, tea.Batch(bridge.Fetch_lights(m.bridge, m.user.Username),
 			bridge.Fetch_groups(m.bridge, m.user.Username),
-			bridge.Fetch_Scenes(m.bridge, m.user.Username))
-		//start displaying
+			bridge.Fetch_Scenes(m.bridge, m.user.Username),
+			view.Fetch_log_file(".debug.log"))
 	case bridge.ClientCreatedMsg:
 		return m, bridge.Find_bridges
 	case bridge.NoClientCreatedMsg:
@@ -89,7 +98,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tea.Batch(bridge.Save_Username(string(msg)),
 			bridge.Fetch_lights(m.bridge, m.user.Username),
 			bridge.Fetch_groups(m.bridge, m.user.Username),
-			bridge.Fetch_Scenes(m.bridge, m.user.Username))
+			bridge.Fetch_Scenes(m.bridge, m.user.Username),
+			view.Fetch_log_file(".debug.log"))
 	case bridge.UserCreationFailedMsg:
 		log.Println("Failed to create user, err: ", bridge.ErrMsg(msg))
 		return m, tea.Quit
@@ -233,14 +243,18 @@ func (m model) View() string {
 		} else if m.lights.Selected {
 			details = view.Render_light_details(m.lights.Items[m.lights.Cursor], m.win.width, m.win.height)
 		} else if m.scenes.Selected {
-			//
 			details = view.Render_scene_details(m.scenes.Items[m.scenes.Cursor], m.win.width, m.win.height)
 		}
 
 		detailsPanel := view.Render_details_panel(details, m.win.width, m.win.height)
-		output := lipgloss.JoinVertical(lipgloss.Left, bridgepanel, grouppanel, lightpanel, scenePanel)
 
-		output = lipgloss.JoinHorizontal(lipgloss.Top, output, detailsPanel)
+		logcontent := view.Render_log_title(m.log.content, m.win.width, m.win.height)
+		logPanel := view.Render_log_panel(logcontent, m.win.width, m.win.height)
+
+		leftSide := lipgloss.JoinVertical(lipgloss.Left, bridgepanel, grouppanel, lightpanel, scenePanel)
+		rightSide := lipgloss.JoinVertical(lipgloss.Bottom, detailsPanel, logPanel)
+
+		output := lipgloss.JoinHorizontal(lipgloss.Top, leftSide, rightSide)
 		return output
 	}
 	return " "
