@@ -192,7 +192,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	}
-	return m, nil
+	return m, view.Fetch_log_file(".debug.log")
 }
 
 func (m model) View() string {
