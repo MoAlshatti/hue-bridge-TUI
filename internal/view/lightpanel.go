@@ -14,7 +14,7 @@ func Render_light_title(title string, bri float64, on bool, selected bool, width
 	if !on {
 		status = "OFF "
 	} else {
-		status = fmt.Sprintln(int(bri), "% ")
+		status = fmt.Sprint(int(bri), "% ")
 	}
 
 	style := lipgloss.NewStyle().Width((get_lightpanel_width(width)) - len(status))

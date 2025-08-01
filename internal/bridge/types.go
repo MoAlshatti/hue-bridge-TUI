@@ -1,6 +1,10 @@
 package bridge
 
-import "time"
+import (
+	"fmt"
+	"log"
+	"time"
+)
 
 type Event int
 
@@ -104,3 +108,12 @@ type ErrMsg struct {
 }
 
 func (e ErrMsg) Error() string { return e.Err.Error() }
+
+type LogFile struct {
+	Content string
+}
+
+func (l *LogFile) Log_Print(v ...any) {
+	log.Println(v...)
+	l.Content = l.Content + fmt.Sprint(time.Now().Format(time.DateTime)) + " " + fmt.Sprintln(v...)
+}

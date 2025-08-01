@@ -9,8 +9,10 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+const logFileName = ".debug.log"
+
 func main() {
-	file, err := tea.LogToFile(".debug.log", "")
+	file, err := tea.LogToFile(logFileName, "")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -27,15 +29,9 @@ type window struct {
 	height int
 }
 
-type logFile struct {
-	content string
-}
-
-// The lights are different for each bridge, we need to handle that, maybe update lights when we choose another bridge in the update method
-// or we coudld move lights and groups to the bridge struct!
 type model struct {
 	win      window
-	log      logFile
+	log      *bridge.LogFile
 	userpage bridge.UserPage
 	bridge   bridge.Bridge
 	user     bridge.User
@@ -51,73 +47,72 @@ func initalModel() model {
 		lights:   bridge.Lights{Cursor: 0},
 		groups:   bridge.Groups{Cursor: 0},
 		bridge:   bridge.Bridge{Selected: true},
-	} // TODO
+		log:      &bridge.LogFile{},
+	}
 }
 
 func (m model) Init() tea.Cmd {
-	return bridge.Init_client
+	return tea.Batch(bridge.Init_client)
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.win.width = msg.Width
 		m.win.height = msg.Height
-	case view.FailedReadingLogMsg:
-		log.Println(bridge.ErrMsg(msg))
-		m.log.content = "Couldnt Read the Logs"
-	case view.LogFileMsg:
-		m.log.content = string(msg)
 	case bridge.BridgeFoundMsg:
+		m.log.Log_Print("Bridge found!")
 		m.bridge = bridge.Bridge(msg)
 		m.bridge.Selected = true
 		m.event = bridge.FindingUser
 		return m, bridge.Find_User(m.bridge)
 	case bridge.NoBridgeFoundMsg:
-		log.Println(bridge.ErrMsg(msg))
+		m.log.Log_Print(bridge.ErrMsg(msg))
 		return m, tea.Quit
 	case bridge.NoUserFoundMsg:
-		log.Println(bridge.ErrMsg(msg))
+		m.log.Log_Print(bridge.ErrMsg(msg))
 		m.event = bridge.RequestPressButton
 	case bridge.UserFoundMsg:
+		m.log.Log_Print("User found!")
 		m.event = bridge.FetchingLights
 		m.user.Username = string(msg)
 
-		return m, tea.Batch(bridge.Fetch_lights(m.bridge, m.user.Username),
-			bridge.Fetch_groups(m.bridge, m.user.Username),
-			bridge.Fetch_Scenes(m.bridge, m.user.Username),
-			view.Fetch_log_file(".debug.log"))
+		return m, tea.Batch(bridge.Fetch_lights(m.bridge, m.user.Username, m.log),
+			bridge.Fetch_groups(m.bridge, m.user.Username, m.log),
+			bridge.Fetch_Scenes(m.bridge, m.user.Username, m.log))
 	case bridge.ClientCreatedMsg:
 		return m, bridge.Find_bridges
 	case bridge.NoClientCreatedMsg:
-		log.Println(bridge.ErrMsg(msg))
+		m.log.Log_Print(bridge.ErrMsg(msg))
 		return m, tea.Quit
 	case bridge.UserCreatedMsg:
 		m.user.Username = string(msg)
 		m.event = bridge.FetchingLights
 		return m, tea.Batch(bridge.Save_Username(string(msg)),
-			bridge.Fetch_lights(m.bridge, m.user.Username),
-			bridge.Fetch_groups(m.bridge, m.user.Username),
-			bridge.Fetch_Scenes(m.bridge, m.user.Username),
-			view.Fetch_log_file(".debug.log"))
+			bridge.Fetch_lights(m.bridge, m.user.Username, m.log),
+			bridge.Fetch_groups(m.bridge, m.user.Username, m.log),
+			bridge.Fetch_Scenes(m.bridge, m.user.Username, m.log))
 	case bridge.UserCreationFailedMsg:
-		log.Println("Failed to create user, err: ", bridge.ErrMsg(msg))
+		m.log.Log_Print("Failed to create user, err: ", bridge.ErrMsg(msg))
 		return m, tea.Quit
 	case bridge.ButtonNotPressed:
-		log.Println(string(msg))
+		m.log.Log_Print(string(msg))
 	case bridge.FailedFetchingLightsMsg:
-		log.Println(bridge.ErrMsg(msg))
+		m.log.Log_Print(bridge.ErrMsg(msg))
 		return m, tea.Quit
 	case bridge.LightsMsg:
+
+		m.log.Log_Print("Lights found")
 		m.lights.Items = []bridge.Light(msg)
 		m.event = bridge.DisplayingLights
 	case bridge.FailedToFetchGroupsMsg:
-		log.Println(bridge.ErrMsg(msg))
+		m.log.Log_Print(bridge.ErrMsg(msg))
 		return m, tea.Quit
 	case bridge.GroupsMsg:
 		m.groups.Items = []bridge.Group(msg)
 	case bridge.FailedToFetchScenesMsg:
-		log.Println(bridge.ErrMsg(msg))
+		m.log.Log_Print(bridge.ErrMsg(msg))
 		return m, tea.Quit
 	case bridge.ScenesMsg:
 		m.scenes.Items = []bridge.Scene(msg)
@@ -126,6 +121,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		case "1":
+			log.Println("bridge panel")
 			m.groups.Selected, m.lights.Selected, m.scenes.Selected = false, false, false
 			m.bridge.Selected = true
 		case "2":
@@ -192,7 +188,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	}
-	return m, view.Fetch_log_file(".debug.log")
+
+	return m, nil
 }
 
 func (m model) View() string {
@@ -248,7 +245,7 @@ func (m model) View() string {
 
 		detailsPanel := view.Render_details_panel(details, m.win.width, m.win.height)
 
-		logcontent := view.Render_log_title(m.log.content, m.win.width, m.win.height)
+		logcontent := view.Render_log_title(m.log.Content, m.win.width, m.win.height)
 		logPanel := view.Render_log_panel(logcontent, m.win.width, m.win.height)
 
 		leftSide := lipgloss.JoinVertical(lipgloss.Left, bridgepanel, grouppanel, lightpanel, scenePanel)

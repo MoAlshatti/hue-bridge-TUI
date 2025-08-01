@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -18,7 +17,7 @@ func set_header(req *http.Request, appkey string) {
 type LightsMsg []Light
 type FailedFetchingLightsMsg ErrMsg
 
-func Fetch_lights(b Bridge, appkey string) tea.Cmd {
+func Fetch_lights(b Bridge, appkey string, logger *LogFile) tea.Cmd {
 	return func() tea.Msg {
 
 		url := fmt.Sprintf("https://%s/clip/v2/resource/light", b.Ip_addr)
@@ -52,7 +51,7 @@ func Fetch_lights(b Bridge, appkey string) tea.Cmd {
 		}
 
 		for _, v := range apiLights.Errors {
-			log.Println(v.Error.Description)
+			logger.Log_Print(v.Error.Description)
 		}
 
 		lights := make([]Light, 0, 15)
@@ -78,7 +77,7 @@ func Fetch_lights(b Bridge, appkey string) tea.Cmd {
 type GroupsMsg []Group
 type FailedToFetchGroupsMsg ErrMsg
 
-func Fetch_groups(b Bridge, appkey string) tea.Cmd {
+func Fetch_groups(b Bridge, appkey string, logger *LogFile) tea.Cmd {
 	return func() tea.Msg {
 		var urls []string
 		url := fmt.Sprintf("https://%s/clip/v2/resource/zone", b.Ip_addr)
@@ -114,7 +113,7 @@ func Fetch_groups(b Bridge, appkey string) tea.Cmd {
 			}
 
 			for _, err := range apiGroups.Errors {
-				log.Println(err.Error.Description)
+				logger.Log_Print(err.Error.Description)
 			}
 
 			for _, group := range apiGroups.Data {
@@ -136,7 +135,7 @@ func Fetch_groups(b Bridge, appkey string) tea.Cmd {
 type ScenesMsg []Scene
 type FailedToFetchScenesMsg ErrMsg
 
-func Fetch_Scenes(b Bridge, appkey string) tea.Cmd {
+func Fetch_Scenes(b Bridge, appkey string, logger *LogFile) tea.Cmd {
 	return func() tea.Msg {
 
 		url := fmt.Sprintf("https://%s/clip/v2/resource/scene", b.Ip_addr)
@@ -170,7 +169,8 @@ func Fetch_Scenes(b Bridge, appkey string) tea.Cmd {
 		}
 
 		for _, v := range ApiScenes.Errors {
-			log.Println(v.Error.Description)
+			logger.Log_Print(v.Error.Description)
+
 		}
 
 		scenes := make([]Scene, 0, 10)
