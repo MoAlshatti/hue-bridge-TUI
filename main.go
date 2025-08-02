@@ -62,7 +62,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.win.width = msg.Width
 		m.win.height = msg.Height
 	case bridge.BridgeFoundMsg:
-		m.log.Log_Print("Bridge found!")
 		m.bridge = bridge.Bridge(msg)
 		m.bridge.Selected = true
 		m.event = bridge.FindingUser
@@ -74,7 +73,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.log.Log_Print(bridge.ErrMsg(msg))
 		m.event = bridge.RequestPressButton
 	case bridge.UserFoundMsg:
-		m.log.Log_Print("User found!")
 		m.event = bridge.FetchingLights
 		m.user.Username = string(msg)
 
@@ -103,7 +101,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	case bridge.LightsMsg:
 
-		m.log.Log_Print("Lights found")
 		m.lights.Items = []bridge.Light(msg)
 		m.event = bridge.DisplayingLights
 	case bridge.FailedToFetchGroupsMsg:
