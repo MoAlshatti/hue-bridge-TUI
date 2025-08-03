@@ -65,6 +65,8 @@ func Fetch_lights(b Bridge, appkey string, logger *LogFile) tea.Cmd {
 			light.Preset = v.Powerup.Preset
 			light.MirekMax = v.ColorTemperature.MirekSchema.MirekMaximum
 			light.MirekMin = v.ColorTemperature.MirekSchema.MirekMinimum
+			light.owner.Rid = v.Owner.Rid
+			light.owner.Rtype = v.Owner.Rtype
 			light.ColorTemp = v.ColorTemperature
 			light.On = v.On.On
 			lights = append(lights, light)

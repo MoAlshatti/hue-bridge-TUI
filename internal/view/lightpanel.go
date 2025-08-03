@@ -67,8 +67,13 @@ func Render_light_panel(elems []string, selected bool, cursor, width, height int
 	return defaultStyle.Render(items)
 }
 
-func Render_lights(l bridge.Lights, p bridge.Panel, width, height int) string {
+func Render_lights(l bridge.Lights, g bridge.Groups, p bridge.Panel, width, height int) string {
 	var lights []string
+
+	if len(l.Items) == 0 {
+		lights = append(lights, " ")
+	}
+
 	for i, v := range l.Items {
 		lights = append(lights, Render_light_title(v.Metadata.Name,
 			v.Dimming.Brightness,

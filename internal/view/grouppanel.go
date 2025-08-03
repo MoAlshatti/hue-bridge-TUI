@@ -96,6 +96,10 @@ func Render_group_details(group bridge.Group, width, height int) string {
 		lipgloss.JoinVertical(lipgloss.Left, children...),
 		lipgloss.JoinVertical(lipgloss.Left, services...))
 
+	if group.ID == "None" {
+		return style.Render(" No Group Chosen ! ")
+	}
+
 	if lipgloss.Height(output) >= get_detailspanel_height(height) {
 		output_array := strings.Split(output, "\n")
 		return lipgloss.JoinVertical(lipgloss.Left, output_array[:get_detailspanel_height(height)]...)

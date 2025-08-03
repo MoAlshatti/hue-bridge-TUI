@@ -35,6 +35,7 @@ type Light struct {
 	Type      string
 	Metadata  Metadata
 	Color     XyColor
+	owner     Owner
 	Dimming   Dimming
 	Preset    string
 	MirekMax  int
@@ -43,10 +44,13 @@ type Light struct {
 	ColorTemp ColorTemperature
 }
 
-// Light is a panel type which incluedes an array of lights and a panel cursor...
+// Light is a panel type which includes two array of lights(filtered/not filtered) and a panel cursor...
 type Lights struct {
-	Items  []Light
-	Cursor int
+	//filtered lights showed based on the selected group
+	Items []Light
+	// all lights no filters
+	AllItems []Light
+	Cursor   int
 }
 
 func (l *Lights) Increment() {
@@ -59,9 +63,6 @@ func (l *Lights) Decrement() {
 		l.Cursor--
 	}
 }
-
-// LightID .... TODO
-type LightID string
 
 // Group is either a zone or a room.... TODO
 type Group struct { // consider making it lowercase if you aint finna use it in main
@@ -78,8 +79,6 @@ type Group struct { // consider making it lowercase if you aint finna use it in 
 // Groups is a panel type which includes an array of groups, a panel cursor, and a map from the lights to the groups
 type Groups struct {
 	Items  []Group
-	LookUp map[LightID]Group
-	//Selected bool
 	Cursor int
 }
 
@@ -101,7 +100,7 @@ const (
 )
 
 type UserPage struct {
-	Items  [2]string //its gonna be 2, quit and buttonPressed
+	Items  [2]string //quit and buttonPressed
 	Cursor int
 }
 
@@ -135,8 +134,9 @@ type Scene struct {
 }
 
 type Scenes struct {
-	Items  []Scene
-	Cursor int
+	AllItems []Scene
+	Items    []Scene
+	Cursor   int
 }
 
 func (s *Scenes) Increment() {

@@ -41,15 +41,17 @@ type Metadata struct {
 	Function  string `json:"function"`
 }
 
+type Owner struct {
+	Rid   string `json:"rid"`
+	Rtype string `json:"rtype"`
+}
+
 type ApiLights struct {
 	Errors []ApiError `json:"errors"`
 	Data   []struct {
-		ID    string `json:"id"`
-		IDV1  string `json:"id_v1"`
-		Owner struct {
-			Rid   string `json:"rid"`
-			Rtype string `json:"rtype"`
-		} `json:"owner"`
+		ID          string   `json:"id"`
+		IDV1        string   `json:"id_v1"`
+		Owner       Owner    `json:"owner"`
 		Metadata    Metadata `json:"metadata"`
 		ProductData struct {
 			Function string `json:"function"`

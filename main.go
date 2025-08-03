@@ -74,9 +74,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case bridge.UserFoundMsg:
 		m.event = bridge.FetchingLights
 		m.user.Username = string(msg)
-		return m, tea.Batch(bridge.Fetch_lights(m.bridge, m.user.Username, m.log),
-			bridge.Fetch_groups(m.bridge, m.user.Username, m.log),
-			bridge.Fetch_Scenes(m.bridge, m.user.Username, m.log))
+		return m, tea.Batch(bridge.Fetch_groups(m.bridge, m.user.Username, m.log))
 	case bridge.ClientCreatedMsg:
 		return m, bridge.Find_bridges
 	case bridge.NoClientCreatedMsg:
@@ -87,9 +85,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.user.Username = string(msg)
 		m.event = bridge.FetchingLights
 		return m, tea.Batch(bridge.Save_Username(string(msg)),
-			bridge.Fetch_lights(m.bridge, m.user.Username, m.log),
-			bridge.Fetch_groups(m.bridge, m.user.Username, m.log),
-			bridge.Fetch_Scenes(m.bridge, m.user.Username, m.log))
+			bridge.Fetch_groups(m.bridge, m.user.Username, m.log))
 	case bridge.UserCreationFailedMsg:
 		m.log.Log_Print("Failed to create user, err: ", bridge.ErrMsg(msg))
 		return m, tea.Quit
@@ -100,20 +96,29 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	case bridge.LightsMsg:
 		m.log.Log_Print("Lights Fetched!")
-		m.lights.Items = []bridge.Light(msg)
+		m.lights.AllItems = []bridge.Light(msg)
+		// populate Items based on the chosen room
+		bridge.Filter_lights(&m.lights, m.groups)
 		m.event = bridge.DisplayingLights
 	case bridge.FailedToFetchGroupsMsg:
 		m.log.Log_Print(bridge.ErrMsg(msg))
 		return m, tea.Quit
 	case bridge.GroupsMsg:
 		m.log.Log_Print("Groups Fetched!")
-		m.groups.Items = []bridge.Group(msg)
+		m.groups.Items = append(m.groups.Items, bridge.Group{ID: "None", Metadata: struct {
+			Name      string
+			Archetype string
+		}{Name: "None"}})
+		m.groups.Items = append(m.groups.Items, []bridge.Group(msg)...)
+		return m, tea.Batch(bridge.Fetch_lights(m.bridge, m.user.Username, m.log),
+			bridge.Fetch_Scenes(m.bridge, m.user.Username, m.log))
 	case bridge.FailedToFetchScenesMsg:
 		m.log.Log_Print(bridge.ErrMsg(msg))
 		return m, tea.Quit
 	case bridge.ScenesMsg:
 		m.log.Log_Print("Scenes Fetched!")
-		m.scenes.Items = []bridge.Scene(msg)
+		m.scenes.AllItems = []bridge.Scene(msg)
+		bridge.Filter_scenes(&m.scenes, m.groups)
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
@@ -129,6 +134,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "j", "down":
 			if m.panel == bridge.GroupPanel {
 				bridge.Increment_cursor(&m.groups)
+				bridge.Filter_lights(&m.lights, m.groups)
+				bridge.Filter_scenes(&m.scenes, m.groups)
 			} else if m.panel == bridge.LightPanel {
 				bridge.Increment_cursor(&m.lights)
 			} else if m.panel == bridge.ScenePanel {
@@ -137,6 +144,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "k", "up":
 			if m.panel == bridge.GroupPanel {
 				bridge.Decrement_cusror(&m.groups)
+				bridge.Filter_lights(&m.lights, m.groups)
+				bridge.Filter_scenes(&m.scenes, m.groups)
 			} else if m.panel == bridge.LightPanel {
 				bridge.Decrement_cusror(&m.lights)
 			} else if m.panel == bridge.ScenePanel {
@@ -176,7 +185,7 @@ func (m model) View() string {
 
 		grouppanel := view.Render_group(m.groups, m.panel, m.win.width, m.win.height)
 
-		lightpanel := view.Render_lights(m.lights, m.panel, m.win.width, m.win.height)
+		lightpanel := view.Render_lights(m.lights, m.groups, m.panel, m.win.width, m.win.height)
 
 		scenePanel := view.Render_scenes(m.scenes, m.panel, m.win.width, m.win.height)
 
