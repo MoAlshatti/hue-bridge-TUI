@@ -56,6 +56,14 @@ func Render_group_panel(elems []string, selected bool, cursor, width, height int
 	return defaultStyle.Render(items)
 }
 
+func Render_group(g bridge.Groups, p bridge.Panel, width, height int) string {
+	var groups []string
+	for i, v := range g.Items {
+		groups = append(groups, Render_group_title(v.Metadata.Name, i == g.Cursor, width, height))
+	}
+	return Render_group_panel(groups, p == bridge.GroupPanel, g.Cursor, width, height)
+}
+
 func Render_group_details(group bridge.Group, width, height int) string {
 	style := lipgloss.NewStyle().
 		Italic(true).

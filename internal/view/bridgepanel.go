@@ -32,6 +32,12 @@ func Render_bridge_panel(title string, selected bool, width, height int) string 
 	return defaultStyle.Render(title)
 }
 
+func Render_bridge(b bridge.Bridge, p bridge.Panel, width, height int) string {
+
+	title := Render_bridge_title("Hue Bridge", width, height)
+	return Render_bridge_panel(title, p == bridge.BridgePanel, width, height)
+}
+
 func Render_bridge_details(b bridge.Bridge, width, height int) string {
 	style := lipgloss.NewStyle().
 		Italic(true).

@@ -1,6 +1,9 @@
 package view
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"github.com/MoAlshatti/hue-bridge-TUI/internal/bridge"
+	"github.com/charmbracelet/lipgloss"
+)
 
 func Render_details_panel(elems string, width, height int) string {
 	style := lipgloss.NewStyle().
@@ -11,4 +14,18 @@ func Render_details_panel(elems string, width, height int) string {
 		Height(get_detailspanel_height(height))
 
 	return style.Render(elems)
+}
+
+func Render_details(b bridge.Bridge, g bridge.Groups, l bridge.Lights, s bridge.Scenes, p bridge.Panel, width, height int) string {
+	var details string
+	if p == bridge.BridgePanel {
+		details = Render_bridge_details(b, width, height)
+	} else if p == bridge.GroupPanel {
+		details = Render_group_details(g.Items[g.Cursor], width, height)
+	} else if p == bridge.LightPanel {
+		details = Render_light_details(l.Items[l.Cursor], width, height)
+	} else if p == bridge.ScenePanel {
+		details = Render_scene_details(s.Items[s.Cursor], width, height)
+	}
+	return Render_details_panel(details, width, height)
 }

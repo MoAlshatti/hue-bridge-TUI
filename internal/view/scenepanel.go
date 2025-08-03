@@ -67,6 +67,16 @@ func Render_scene_panel(elems []string, selected bool, cursor, width, height int
 
 }
 
+func Render_scenes(s bridge.Scenes, p bridge.Panel, width, height int) string {
+	var scenes []string
+	for i, v := range s.Items {
+		scenes = append(scenes, Render_scene_title(v.Name,
+			v.Active,
+			i == s.Cursor && p == bridge.ScenePanel, width, height))
+	}
+	return Render_scene_panel(scenes, p == bridge.ScenePanel, s.Cursor, width, height)
+}
+
 func Render_scene_details(s bridge.Scene, width, height int) string {
 	style := lipgloss.NewStyle().
 		Italic(true).

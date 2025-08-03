@@ -67,6 +67,16 @@ func Render_light_panel(elems []string, selected bool, cursor, width, height int
 	return defaultStyle.Render(items)
 }
 
+func Render_lights(l bridge.Lights, p bridge.Panel, width, height int) string {
+	var lights []string
+	for i, v := range l.Items {
+		lights = append(lights, Render_light_title(v.Metadata.Name,
+			v.Dimming.Brightness,
+			v.On, i == l.Cursor && p == bridge.LightPanel, width, height))
+	}
+	return Render_light_panel(lights, p == bridge.LightPanel, l.Cursor, width, height)
+}
+
 func Render_light_details(l bridge.Light, width, height int) string {
 	style := lipgloss.NewStyle().
 		Italic(true).

@@ -83,6 +83,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.log.Log_Print(bridge.ErrMsg(msg))
 		return m, tea.Quit
 	case bridge.UserCreatedMsg:
+		m.log.Log_Print("User Created Successfully!")
 		m.user.Username = string(msg)
 		m.event = bridge.FetchingLights
 		return m, tea.Batch(bridge.Save_Username(string(msg)),
@@ -98,17 +99,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.log.Log_Print(bridge.ErrMsg(msg))
 		return m, tea.Quit
 	case bridge.LightsMsg:
+		m.log.Log_Print("Lights Fetched!")
 		m.lights.Items = []bridge.Light(msg)
 		m.event = bridge.DisplayingLights
 	case bridge.FailedToFetchGroupsMsg:
 		m.log.Log_Print(bridge.ErrMsg(msg))
 		return m, tea.Quit
 	case bridge.GroupsMsg:
+		m.log.Log_Print("Groups Fetched!")
 		m.groups.Items = []bridge.Group(msg)
 	case bridge.FailedToFetchScenesMsg:
 		m.log.Log_Print(bridge.ErrMsg(msg))
 		return m, tea.Quit
 	case bridge.ScenesMsg:
+		m.log.Log_Print("Scenes Fetched!")
 		m.scenes.Items = []bridge.Scene(msg)
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -165,54 +169,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	switch event := m.event; event {
 	case bridge.RequestPressButton:
-		title := view.Render_userpage_title("Press the hue bridge button!")
-		var (
-			quitOpt, pressOpt string
-		)
-		quitOpt = view.Render_userpage_options(m.userpage.Items[bridge.Quit], m.userpage.Cursor == bridge.Quit)
-		pressOpt = view.Render_userpage_options(m.userpage.Items[bridge.PressTheButton], m.userpage.Cursor != bridge.Quit)
-
-		userpage := view.Render_userpage(title, quitOpt, pressOpt)
+		userpage := view.Render_userpage(m.userpage)
 		return lipgloss.Place(m.win.width, m.win.height, lipgloss.Center, lipgloss.Center, userpage)
 	case bridge.DisplayingLights:
-		title := view.Render_bridge_title("Hue Bridge", m.win.width, m.win.height)
+		bridgepanel := view.Render_bridge(m.bridge, m.panel, m.win.width, m.win.height)
 
-		bridgepanel := view.Render_bridge_panel(title, m.panel == bridge.BridgePanel, m.win.width, m.win.height)
+		grouppanel := view.Render_group(m.groups, m.panel, m.win.width, m.win.height)
 
-		var groups []string
-		for i, v := range m.groups.Items {
-			groups = append(groups, view.Render_group_title(v.Metadata.Name, i == m.groups.Cursor, m.win.width, m.win.height))
-		}
-		grouppanel := view.Render_group_panel(groups, m.panel == bridge.GroupPanel, m.groups.Cursor, m.win.width, m.win.height)
+		lightpanel := view.Render_lights(m.lights, m.panel, m.win.width, m.win.height)
 
-		var lights []string
-		for i, v := range m.lights.Items {
-			lights = append(lights, view.Render_light_title(v.Metadata.Name,
-				v.Dimming.Brightness,
-				v.On, i == m.lights.Cursor && m.panel == bridge.LightPanel, m.win.width, m.win.height))
-		}
-		lightpanel := view.Render_light_panel(lights, m.panel == bridge.LightPanel, m.lights.Cursor, m.win.width, m.win.height)
+		scenePanel := view.Render_scenes(m.scenes, m.panel, m.win.width, m.win.height)
 
-		var scenes []string
-		for i, v := range m.scenes.Items {
-			scenes = append(scenes, view.Render_scene_title(v.Name,
-				v.Active,
-				i == m.scenes.Cursor && m.panel == bridge.ScenePanel, m.win.width, m.win.height))
-		}
-		scenePanel := view.Render_scene_panel(scenes, m.panel == bridge.ScenePanel, m.scenes.Cursor, m.win.width, m.win.height)
-
-		var details string
-		if m.panel == bridge.BridgePanel {
-			details = view.Render_bridge_details(m.bridge, m.win.width, m.win.height)
-		} else if m.panel == bridge.GroupPanel {
-			details = view.Render_group_details(m.groups.Items[m.groups.Cursor], m.win.width, m.win.height)
-		} else if m.panel == bridge.LightPanel {
-			details = view.Render_light_details(m.lights.Items[m.lights.Cursor], m.win.width, m.win.height)
-		} else if m.panel == bridge.ScenePanel {
-			details = view.Render_scene_details(m.scenes.Items[m.scenes.Cursor], m.win.width, m.win.height)
-		}
-
-		detailsPanel := view.Render_details_panel(details, m.win.width, m.win.height)
+		detailsPanel := view.Render_details(m.bridge, m.groups, m.lights, m.scenes, m.panel, m.win.width, m.win.height)
 
 		logcontent := view.Render_log_title(m.log.Content, m.win.width, m.win.height)
 		logPanel := view.Render_log_panel(logcontent, m.win.width, m.win.height)
