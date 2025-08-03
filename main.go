@@ -38,6 +38,7 @@ type model struct {
 	groups   bridge.Groups
 	scenes   bridge.Scenes
 	lights   bridge.Lights
+	panel    bridge.Panel
 	event    bridge.Event
 }
 
@@ -46,8 +47,8 @@ func initalModel() model {
 		userpage: bridge.UserPage{Items: [2]string{"Quit", "Done!"}},
 		lights:   bridge.Lights{Cursor: 0},
 		groups:   bridge.Groups{Cursor: 0},
-		bridge:   bridge.Bridge{Selected: true},
 		log:      &bridge.LogFile{},
+		panel:    bridge.BridgePanel,
 	}
 }
 
@@ -56,14 +57,12 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.win.width = msg.Width
 		m.win.height = msg.Height
 	case bridge.BridgeFoundMsg:
 		m.bridge = bridge.Bridge(msg)
-		m.bridge.Selected = true
 		m.event = bridge.FindingUser
 		return m, bridge.Find_User(m.bridge)
 	case bridge.NoBridgeFoundMsg:
@@ -75,7 +74,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case bridge.UserFoundMsg:
 		m.event = bridge.FetchingLights
 		m.user.Username = string(msg)
-
 		return m, tea.Batch(bridge.Fetch_lights(m.bridge, m.user.Username, m.log),
 			bridge.Fetch_groups(m.bridge, m.user.Username, m.log),
 			bridge.Fetch_Scenes(m.bridge, m.user.Username, m.log))
@@ -100,7 +98,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.log.Log_Print(bridge.ErrMsg(msg))
 		return m, tea.Quit
 	case bridge.LightsMsg:
-
 		m.lights.Items = []bridge.Light(msg)
 		m.event = bridge.DisplayingLights
 	case bridge.FailedToFetchGroupsMsg:
@@ -118,65 +115,42 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		case "1":
-			log.Println("bridge panel")
-			m.groups.Selected, m.lights.Selected, m.scenes.Selected = false, false, false
-			m.bridge.Selected = true
+			m.panel = bridge.BridgePanel
 		case "2":
-			m.bridge.Selected, m.lights.Selected, m.scenes.Selected = false, false, false
-			m.groups.Selected = true
+			m.panel = bridge.GroupPanel
 		case "3":
-			m.bridge.Selected, m.groups.Selected, m.scenes.Selected = false, false, false
-			m.lights.Selected = true
+			m.panel = bridge.LightPanel
 		case "4":
-			m.bridge.Selected, m.groups.Selected, m.lights.Selected = false, false, false
-			m.scenes.Selected = true
+			m.panel = bridge.ScenePanel
 		case "j", "down":
-			if m.groups.Selected {
-				if m.groups.Cursor < len(m.groups.Items)-1 {
-					m.groups.Cursor++
-				}
-			} else if m.lights.Selected {
-				if m.lights.Cursor < len(m.lights.Items)-1 {
-					m.lights.Cursor++
-				}
-			} else if m.scenes.Selected {
-				if m.scenes.Cursor < len(m.scenes.Items)-1 {
-					m.scenes.Cursor++
-				}
+			if m.panel == bridge.GroupPanel {
+				bridge.Increment_cursor(&m.groups)
+			} else if m.panel == bridge.LightPanel {
+				bridge.Increment_cursor(&m.lights)
+			} else if m.panel == bridge.ScenePanel {
+				bridge.Increment_cursor(&m.scenes)
 			}
 		case "k", "up":
-			if m.groups.Selected {
-				if m.groups.Cursor > 0 {
-					m.groups.Cursor--
-				}
-			} else if m.lights.Selected {
-				if m.lights.Cursor > 0 {
-					m.lights.Cursor--
-				}
-			} else if m.scenes.Selected {
-				if m.scenes.Cursor > 0 {
-					m.scenes.Cursor--
-				}
+			if m.panel == bridge.GroupPanel {
+				bridge.Decrement_cusror(&m.groups)
+			} else if m.panel == bridge.LightPanel {
+				bridge.Decrement_cusror(&m.lights)
+			} else if m.panel == bridge.ScenePanel {
+				bridge.Decrement_cusror(&m.scenes)
 			}
-
 		case "h", "left":
 			switch m.event {
 			case bridge.RequestPressButton:
-				if m.userpage.Cursor <= 1 {
-					m.userpage.Cursor++
-				}
+				bridge.Increment_cursor(&m.userpage)
 			}
 		case "l", "right":
 			switch m.event {
 			case bridge.RequestPressButton:
-				if m.userpage.Cursor > 0 {
-					m.userpage.Cursor--
-				}
+				bridge.Decrement_cusror(&m.userpage)
 			}
 		case "enter":
 			switch m.event {
 			case bridge.RequestPressButton:
-				//
 				if m.userpage.Cursor == bridge.Quit {
 					return m, tea.Quit
 				} else if m.userpage.Cursor == bridge.PressTheButton {
@@ -185,14 +159,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	}
-
 	return m, nil
 }
 
 func (m model) View() string {
 	switch event := m.event; event {
 	case bridge.RequestPressButton:
-		//
 		title := view.Render_userpage_title("Press the hue bridge button!")
 		var (
 			quitOpt, pressOpt string
@@ -205,38 +177,38 @@ func (m model) View() string {
 	case bridge.DisplayingLights:
 		title := view.Render_bridge_title("Hue Bridge", m.win.width, m.win.height)
 
-		bridgepanel := view.Render_bridge_panel(title, m.bridge.Selected, m.win.width, m.win.height)
+		bridgepanel := view.Render_bridge_panel(title, m.panel == bridge.BridgePanel, m.win.width, m.win.height)
 
 		var groups []string
 		for i, v := range m.groups.Items {
 			groups = append(groups, view.Render_group_title(v.Metadata.Name, i == m.groups.Cursor, m.win.width, m.win.height))
 		}
-		grouppanel := view.Render_group_panel(groups, m.groups.Selected, m.groups.Cursor, m.win.width, m.win.height)
+		grouppanel := view.Render_group_panel(groups, m.panel == bridge.GroupPanel, m.groups.Cursor, m.win.width, m.win.height)
 
 		var lights []string
 		for i, v := range m.lights.Items {
 			lights = append(lights, view.Render_light_title(v.Metadata.Name,
 				v.Dimming.Brightness,
-				v.On, i == m.lights.Cursor && m.lights.Selected, m.win.width, m.win.height))
+				v.On, i == m.lights.Cursor && m.panel == bridge.LightPanel, m.win.width, m.win.height))
 		}
-		lightpanel := view.Render_light_panel(lights, m.lights.Selected, m.lights.Cursor, m.win.width, m.win.height)
+		lightpanel := view.Render_light_panel(lights, m.panel == bridge.LightPanel, m.lights.Cursor, m.win.width, m.win.height)
 
 		var scenes []string
 		for i, v := range m.scenes.Items {
 			scenes = append(scenes, view.Render_scene_title(v.Name,
 				v.Active,
-				i == m.scenes.Cursor && m.scenes.Selected, m.win.width, m.win.height))
+				i == m.scenes.Cursor && m.panel == bridge.ScenePanel, m.win.width, m.win.height))
 		}
-		scenePanel := view.Render_scene_panel(scenes, m.scenes.Selected, m.scenes.Cursor, m.win.width, m.win.height)
+		scenePanel := view.Render_scene_panel(scenes, m.panel == bridge.ScenePanel, m.scenes.Cursor, m.win.width, m.win.height)
 
 		var details string
-		if m.bridge.Selected {
+		if m.panel == bridge.BridgePanel {
 			details = view.Render_bridge_details(m.bridge, m.win.width, m.win.height)
-		} else if m.groups.Selected {
+		} else if m.panel == bridge.GroupPanel {
 			details = view.Render_group_details(m.groups.Items[m.groups.Cursor], m.win.width, m.win.height)
-		} else if m.lights.Selected {
+		} else if m.panel == bridge.LightPanel {
 			details = view.Render_light_details(m.lights.Items[m.lights.Cursor], m.win.width, m.win.height)
-		} else if m.scenes.Selected {
+		} else if m.panel == bridge.ScenePanel {
 			details = view.Render_scene_details(m.scenes.Items[m.scenes.Cursor], m.win.width, m.win.height)
 		}
 

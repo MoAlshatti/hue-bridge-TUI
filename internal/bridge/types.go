@@ -19,6 +19,16 @@ const (
 	DisplayingLights
 )
 
+type Panel int
+
+const (
+	_ Panel = iota
+	BridgePanel
+	GroupPanel
+	LightPanel
+	ScenePanel
+)
+
 // Light represents ..... TODO
 type Light struct {
 	ID        string
@@ -35,9 +45,19 @@ type Light struct {
 
 // Light is a panel type which incluedes an array of lights and a panel cursor...
 type Lights struct {
-	Items    []Light
-	Selected bool
-	Cursor   int
+	Items  []Light
+	Cursor int
+}
+
+func (l *Lights) Increment() {
+	if l.Cursor < len(l.Items)-1 {
+		l.Cursor++
+	}
+}
+func (l *Lights) Decrement() {
+	if l.Cursor > 0 {
+		l.Cursor--
+	}
 }
 
 // LightID .... TODO
@@ -57,13 +77,25 @@ type Group struct { // consider making it lowercase if you aint finna use it in 
 
 // Groups is a panel type which includes an array of groups, a panel cursor, and a map from the lights to the groups
 type Groups struct {
-	Items    []Group
-	LookUp   map[LightID]Group
-	Selected bool
-	Cursor   int
+	Items  []Group
+	LookUp map[LightID]Group
+	//Selected bool
+	Cursor int
+}
+
+func (g *Groups) Increment() {
+	if g.Cursor < len(g.Items)-1 {
+		g.Cursor++
+	}
+}
+func (g *Groups) Decrement() {
+	if g.Cursor > 0 {
+		g.Cursor--
+	}
 }
 
 const (
+	//shitty naming conventions,well..
 	Quit           = 0
 	PressTheButton = 1
 )
@@ -73,13 +105,23 @@ type UserPage struct {
 	Cursor int
 }
 
+func (u *UserPage) Increment() {
+	if u.Cursor < len(u.Items)-1 {
+		u.Cursor++
+	}
+}
+func (u *UserPage) Decrement() {
+	if u.Cursor > 0 {
+		u.Cursor--
+	}
+}
+
 // Bridge has all the needed bridge info ....
 type Bridge struct {
-	ID       string `json:"id"`
-	Ip_addr  string `json:"internalipaddress"`
-	Port     int    `json:"port"`
-	Selected bool
-	Info     []string
+	ID      string `json:"id"`
+	Ip_addr string `json:"internalipaddress"`
+	Port    int    `json:"port"`
+	Info    []string
 }
 
 type Scene struct {
@@ -93,9 +135,20 @@ type Scene struct {
 }
 
 type Scenes struct {
-	Items    []Scene
-	Selected bool
-	Cursor   int
+	Items  []Scene
+	Cursor int
+}
+
+func (s *Scenes) Increment() {
+	if s.Cursor < len(s.Items)-1 {
+		s.Cursor++
+	}
+}
+
+func (s *Scenes) Decrement() {
+	if s.Cursor > 0 {
+		s.Cursor--
+	}
 }
 
 // represents the user uesd for the API

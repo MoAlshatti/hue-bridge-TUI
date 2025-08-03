@@ -21,7 +21,7 @@ func Render_bridge_panel(title string, selected bool, width, height int) string 
 		MarginTop(1).
 		Border(border).
 		PaddingLeft(1).
-		Height(get_bridgepanel_height(height)). //dont do shit for now, maybe useful later
+		Height(get_bridgepanel_height(height)).
 		MaxHeight(5)
 
 	selectedStyle := defaultStyle.BorderForeground(cyan)
