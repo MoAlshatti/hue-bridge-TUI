@@ -8,14 +8,24 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-func Render_group_title(title string, selected bool, width, height int) string {
-	defaultStyle := lipgloss.NewStyle().Width(get_grouppanel_width(width))
+func Render_group_title(title string, bri float64, on, selected, isNone bool, width, height int) string {
+	status := ""
+	if !on && !isNone {
+		status = "OFF "
+	} else if on {
+		status = fmt.Sprint(int(bri), "% ")
+	}
+
+	defaultStyle := lipgloss.NewStyle().Width(get_grouppanel_width(width) - len(status))
 	selectedStyle := defaultStyle.Background(aqua).Foreground(navy)
 
+	statusStyle := lipgloss.NewStyle().Align(lipgloss.Right).Width(len(status))
+	selectedStatusStyle := statusStyle.Background(aqua).Foreground(navy)
+
 	if selected {
-		return selectedStyle.Render(title)
+		return lipgloss.JoinHorizontal(lipgloss.Right, selectedStyle.Render(title), selectedStatusStyle.Render(status))
 	}
-	return defaultStyle.Render(title)
+	return lipgloss.JoinHorizontal(lipgloss.Right, defaultStyle.Render(title), statusStyle.Render(status))
 }
 func Render_group_panel(elems []string, selected bool, cursor, width, height int) string {
 
@@ -59,7 +69,7 @@ func Render_group_panel(elems []string, selected bool, cursor, width, height int
 func Render_group(g bridge.Groups, p bridge.Panel, width, height int) string {
 	var groups []string
 	for i, v := range g.Items {
-		groups = append(groups, Render_group_title(v.Metadata.Name, i == g.Cursor, width, height))
+		groups = append(groups, Render_group_title(v.Metadata.Name, v.Brightness, v.On, i == g.Cursor, i == 0, width, height))
 	}
 	return Render_group_panel(groups, p == bridge.GroupPanel, g.Cursor, width, height)
 }
