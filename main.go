@@ -123,6 +123,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.log.Log_Print(bridge.ErrMsg(msg))
 	case bridge.LightStateChangedMsg:
 		m.log.Log_Print(string(msg))
+	case bridge.FailedToChangeBrightness:
+		m.log.Log_Print(bridge.ErrMsg(msg))
+	case bridge.BrightnessChanged:
+		m.log.Log_Print(string(msg))
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
@@ -159,11 +163,30 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch m.event {
 			case bridge.RequestPressButton:
 				bridge.Increment_cursor(&m.userpage)
+			case bridge.DisplayingLights:
+				switch m.panel {
+				case bridge.LightPanel:
+					light := &m.lights.Items[m.lights.Cursor]
+					if light.Dimming.Brightness > 0 {
+						bri := max(light.Dimming.Brightness-15, 0.0)
+						return m, bridge.Change_light_brightness(m.bridge, light, bri, m.user.Username)
+					}
+				}
 			}
 		case "l", "right":
 			switch m.event {
 			case bridge.RequestPressButton:
 				bridge.Decrement_cusror(&m.userpage)
+			case bridge.DisplayingLights:
+				switch m.panel {
+				case bridge.LightPanel:
+					light := &m.lights.Items[m.lights.Cursor]
+					if light.Dimming.Brightness < 100 {
+						bri := min(light.Dimming.Brightness+15, 100.0)
+						return m, bridge.Change_light_brightness(m.bridge, light, bri, m.user.Username)
+					}
+
+				}
 			}
 		case "enter":
 			switch m.event {

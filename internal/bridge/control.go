@@ -237,6 +237,54 @@ func Change_light_state(b Bridge, light *Light, on bool, appkey string) tea.Cmd 
 			light.On = !light.On
 			return LightStateChangedMsg(fmt.Sprint(light.Metadata.Name, " state changed!"))
 		}
-		return FailedToChangeLightMsg(ErrMsg{errors.New(resp.Status)})
+		return FailedToChangeLightMsg(ErrMsg{errors.New(resp.Status + " Failed to change light state !")})
+	}
+}
+
+type BrightnessChanged string
+type FailedToChangeBrightness ErrMsg
+
+func Change_light_brightness(b Bridge, light *Light, bri float64, appkey string) tea.Cmd {
+	return func() tea.Msg {
+
+		//this function should not be called if brightness is invalid, but this is a double check
+		if bri > 100.0 || bri < 0.0 {
+			return FailedToChangeBrightness(ErrMsg{errors.New("Invalid brightness!")})
+		}
+
+		url := fmt.Sprintf("https://%s/clip/v2/resource/light/%s", b.Ip_addr, light.ID)
+
+		ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+		defer cancel()
+
+		body := struct {
+			Dimming struct {
+				Brightness float64 `json:"brightness"`
+			} `json:"dimming"`
+		}{
+			Dimming: struct {
+				Brightness float64 `json:"brightness"`
+			}{bri},
+		}
+
+		var buff bytes.Buffer
+		json.NewEncoder(&buff).Encode(&body)
+
+		req, err := http.NewRequestWithContext(ctx, http.MethodPut, url, &buff)
+		if err != nil {
+			return FailedToChangeBrightness(ErrMsg{err})
+		}
+		set_header(req, appkey)
+		resp, err := client.Do(req)
+		if err != nil {
+			return FailedToChangeBrightness(ErrMsg{err})
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode == http.StatusOK {
+			light.Dimming.Brightness = bri
+			return BrightnessChanged(fmt.Sprint(light.Metadata.Name, " brightness changed!"))
+		}
+		return FailedToChangeBrightness(ErrMsg{errors.New(resp.Status + " Failed to change Brightness!")})
 	}
 }
