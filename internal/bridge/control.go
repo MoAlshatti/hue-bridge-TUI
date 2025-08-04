@@ -1,8 +1,10 @@
 package bridge
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -196,5 +198,45 @@ func Fetch_Scenes(b Bridge, appkey string, logger *LogFile) tea.Cmd {
 			scenes = append(scenes, newScene)
 		}
 		return ScenesMsg(scenes)
+	}
+}
+
+type LightStateChangedMsg string
+type FailedToChangeLightMsg ErrMsg
+
+func Change_light_state(b Bridge, light *Light, on bool, appkey string) tea.Cmd {
+	return func() tea.Msg {
+		url := fmt.Sprintf("https://%s/clip/v2/resource/light/%s", b.Ip_addr, light.ID)
+
+		ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+		defer cancel()
+
+		body := struct {
+			On struct {
+				On bool `json:"on"`
+			} `json:"on"`
+		}{On: struct {
+			On bool `json:"on"`
+		}{on}}
+
+		var buff bytes.Buffer
+		json.NewEncoder(&buff).Encode(&body)
+
+		req, err := http.NewRequestWithContext(ctx, http.MethodPut, url, &buff)
+		if err != nil {
+			return FailedToChangeLightMsg(ErrMsg{err})
+		}
+		set_header(req, appkey)
+		resp, err := client.Do(req)
+		if err != nil {
+			return FailedToChangeLightMsg(ErrMsg{err})
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode == http.StatusOK {
+			light.On = !light.On
+			return LightStateChangedMsg(fmt.Sprint(light.Metadata.Name, " state changed!"))
+		}
+		return FailedToChangeLightMsg(ErrMsg{errors.New(resp.Status)})
 	}
 }

@@ -10,7 +10,7 @@ import (
 
 func Render_group_title(title string, selected bool, width, height int) string {
 	defaultStyle := lipgloss.NewStyle().Width(get_grouppanel_width(width))
-	selectedStyle := defaultStyle.Background(white).Foreground(navy)
+	selectedStyle := defaultStyle.Background(aqua).Foreground(navy)
 
 	if selected {
 		return selectedStyle.Render(title)

@@ -119,6 +119,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.log.Log_Print("Scenes Fetched!")
 		m.scenes.AllItems = []bridge.Scene(msg)
 		bridge.Filter_scenes(&m.scenes, m.groups)
+	case bridge.FailedToChangeLightMsg:
+		m.log.Log_Print(bridge.ErrMsg(msg))
+	case bridge.LightStateChangedMsg:
+		m.log.Log_Print(string(msg))
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
@@ -164,10 +168,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			switch m.event {
 			case bridge.RequestPressButton:
-				if m.userpage.Cursor == bridge.Quit {
+				switch m.userpage.Cursor {
+				case bridge.Quit:
 					return m, tea.Quit
-				} else if m.userpage.Cursor == bridge.PressTheButton {
+				case bridge.PressTheButton:
 					return m, bridge.Create_User(m.bridge)
+				}
+			case bridge.DisplayingLights:
+				switch m.panel {
+				case bridge.LightPanel:
+					//
+					light := &m.lights.Items[m.lights.Cursor]
+					return m, bridge.Change_light_state(m.bridge, light, !light.On, m.user.Username)
+				case bridge.GroupPanel:
+					//
+				case bridge.ScenePanel:
+					//
 				}
 			}
 		}

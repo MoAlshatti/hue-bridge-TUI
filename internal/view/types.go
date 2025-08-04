@@ -9,6 +9,7 @@ var (
 	navy  = lipgloss.Color("#000080")
 	green = lipgloss.Color("#59ff85")
 	cyan  = lipgloss.Color("#00FFFF")
+	aqua  = lipgloss.Color("#A7D8DE")
 )
 
 func get_lightpanel_width(width int) int {
