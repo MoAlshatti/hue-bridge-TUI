@@ -167,7 +167,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				switch m.panel {
 				case bridge.LightPanel:
 					light := &m.lights.Items[m.lights.Cursor]
-					if light.Dimming.Brightness > 0 {
+					if light.Dimming.Brightness > 0 && light.On {
 						bri := max(light.Dimming.Brightness-15, 0.0)
 						return m, bridge.Change_light_brightness(m.bridge, light, bri, m.user.Username)
 					}
@@ -181,7 +181,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				switch m.panel {
 				case bridge.LightPanel:
 					light := &m.lights.Items[m.lights.Cursor]
-					if light.Dimming.Brightness < 100 {
+					if light.Dimming.Brightness < 100 && light.On {
 						bri := min(light.Dimming.Brightness+15, 100.0)
 						return m, bridge.Change_light_brightness(m.bridge, light, bri, m.user.Username)
 					}

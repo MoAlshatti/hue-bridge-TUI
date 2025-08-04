@@ -16,6 +16,7 @@ func Filter_lights(l *Lights, g Groups) {
 		}
 	}
 	l.Items = lights
+	l.Cursor = 0
 }
 
 func Filter_scenes(s *Scenes, g Groups) {
@@ -30,4 +31,5 @@ func Filter_scenes(s *Scenes, g Groups) {
 		}
 	}
 	s.Items = scenes
+	s.Cursor = 0
 }

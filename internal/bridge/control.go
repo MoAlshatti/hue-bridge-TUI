@@ -129,11 +129,68 @@ func Fetch_groups(b Bridge, appkey string, logger *LogFile) tea.Cmd {
 				newGroup.Services = group.Services
 				newGroup.Metadata.Archetype = group.Metadata.Archetype
 				newGroup.Metadata.Name = group.Metadata.Name
+
+				for _, service := range group.Services {
+					if service.Rtype == "grouped_light" {
+						newGroup.GroupID = service.Rid
+					}
+				}
 				groups = append(groups, newGroup)
 			}
+
+			// query each one for group_lights
+			baseurl := fmt.Sprintf("https://%s/clip/v2/resource", b.Ip_addr)
+			lightgroups, err := fetch_lightgroups(baseurl, appkey, groups)
+			if err != nil {
+				return FailedToFetchGroupsMsg(ErrMsg{err})
+			}
+			groups = lightgroups
 		}
 		return GroupsMsg(groups)
 	}
+}
+
+func fetch_lightgroups(baseurl, appkey string, groups []Group) ([]Group, error) {
+	for i := range groups {
+
+		var serviceID string
+		for _, service := range groups[i].Services {
+			if service.Rtype == "grouped_light" {
+				serviceID = service.Rid
+			}
+		}
+		url := fmt.Sprintf("%s/grouped_light/%s", baseurl, serviceID)
+
+		ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+		defer cancel()
+
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+		if err != nil {
+			return nil, err
+		}
+		set_header(req, appkey)
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("%s: failed to fetch grouped_light", resp.Status)
+		}
+
+		var apiLightGroup ApiGroupedLights
+		decoder := json.NewDecoder(resp.Body)
+		err = decoder.Decode(&apiLightGroup)
+		if err != nil {
+			return nil, err
+		}
+
+		groups[i].On = apiLightGroup.Data[0].On.On
+		groups[i].Brightness = apiLightGroup.Data[0].Dimming.Brightness
+		groups[i].MinDim = apiLightGroup.Data[0].Dimming.MinDimLevel
+	}
+	return groups, nil
 }
 
 type ScenesMsg []Scene

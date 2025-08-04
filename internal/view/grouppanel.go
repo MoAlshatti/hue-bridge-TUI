@@ -72,6 +72,9 @@ func Render_group_details(group bridge.Group, width, height int) string {
 
 	name := style.Render(fmt.Sprintln("Group Name: ", group.Metadata.Name))
 	id := style.Render(fmt.Sprintln("ID: ", group.ID))
+	on := style.Render(fmt.Sprintln("On: ", group.On))
+	bri := style.Render(fmt.Sprintf("Brightness: %.2f \n", group.Brightness))
+
 	group_type := style.Render(fmt.Sprintln("Group Type: ", group.Type))
 	archtype := style.Render(fmt.Sprintln("Archtype: ", group.Metadata.Archetype))
 
@@ -91,6 +94,8 @@ func Render_group_details(group bridge.Group, width, height int) string {
 	}
 	output := lipgloss.JoinVertical(lipgloss.Left, name,
 		id,
+		on,
+		bri,
 		group_type,
 		archtype,
 		lipgloss.JoinVertical(lipgloss.Left, children...),

@@ -46,6 +46,10 @@ type Owner struct {
 	Rtype string `json:"rtype"`
 }
 
+type On struct {
+	On bool `json:"on"`
+}
+
 type ApiLights struct {
 	Errors []ApiError `json:"errors"`
 	Data   []struct {
@@ -58,10 +62,8 @@ type ApiLights struct {
 		} `json:"product_data"`
 		Identify struct {
 		} `json:"identify"`
-		ServiceID int `json:"service_id"`
-		On        struct {
-			On bool `json:"on"`
-		} `json:"on"`
+		ServiceID    int     `json:"service_id"`
+		On           On      `json:"on"`
 		Dimming      Dimming `json:"dimming"`
 		DimmingDelta struct {
 		} `json:"dimming_delta"`
@@ -123,9 +125,7 @@ type ApiLights struct {
 			Configured bool   `json:"configured"`
 			On         struct {
 				Mode string `json:"mode"`
-				On   struct {
-					On bool `json:"on"`
-				} `json:"on"`
+				On   On     `json:"on"`
 			} `json:"on"`
 			Dimming struct {
 				Mode string `json:"mode"`
@@ -149,9 +149,7 @@ type ApiScene struct {
 				Rtype string `json:"rtype"`
 			} `json:"target"`
 			Action struct {
-				On struct {
-					On bool `json:"on"`
-				} `json:"on"`
+				On      On `json:"on"`
 				Dimming struct {
 					Brightness float64 `json:"brightness"`
 				} `json:"dimming"`
@@ -218,6 +216,34 @@ type ApiGroup struct {
 			Name      string `json:"name"`
 			Archetype string `json:"archetype"`
 		} `json:"metadata"`
+		Type string `json:"type"`
+	} `json:"data"`
+}
+
+type ApiGroupedLights struct {
+	Errors []ApiError `json:"errors"`
+	Data   []struct {
+		ID           string  `json:"id"`
+		IDV1         string  `json:"id_v1"`
+		Owner        Owner   `json:"owner"`
+		On           On      `json:"on"`
+		Dimming      Dimming `json:"dimming"`
+		DimmingDelta struct {
+		} `json:"dimming_delta"`
+		ColorTemperature struct {
+		} `json:"color_temperature"`
+		ColorTemperatureDelta struct {
+		} `json:"color_temperature_delta"`
+		Color struct {
+		} `json:"color"`
+		Alert struct {
+			ActionValues []string `json:"action_values"`
+		} `json:"alert"`
+		Signaling struct {
+			SignalValues []string `json:"signal_values"`
+		} `json:"signaling"`
+		Dynamics struct {
+		} `json:"dynamics"`
 		Type string `json:"type"`
 	} `json:"data"`
 }

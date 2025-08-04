@@ -73,7 +73,11 @@ type Group struct { // consider making it lowercase if you aint finna use it in 
 		Name      string
 		Archetype string
 	}
-	Type string
+	GroupID    string
+	On         bool
+	Brightness float64
+	MinDim     float64
+	Type       string
 }
 
 // Groups is a panel type which includes an array of groups, a panel cursor, and a map from the lights to the groups
