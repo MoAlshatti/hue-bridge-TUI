@@ -26,11 +26,11 @@ func Render_details(b bridge.Bridge, g bridge.Groups, l bridge.Lights, s bridge.
 		}
 	} else if p == bridge.LightPanel {
 		if len(l.Items) > 0 {
-			details = Render_light_details(l.Items[l.Cursor], width, height)
+			details = Render_light_details(*l.Items[l.Cursor], width, height)
 		}
 	} else if p == bridge.ScenePanel {
 		if len(s.Items) > 0 {
-			details = Render_scene_details(s.Items[s.Cursor], width, height)
+			details = Render_scene_details(*s.Items[s.Cursor], width, height)
 		}
 	}
 	return Render_details_panel(details, width, height)

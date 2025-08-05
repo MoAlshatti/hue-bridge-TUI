@@ -119,13 +119,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.log.Log_Print("Scenes Fetched!")
 		m.scenes.AllItems = []bridge.Scene(msg)
 		bridge.Filter_scenes(&m.scenes, m.groups)
-	case bridge.FailedToChangeLightMsg:
+	case bridge.ResourceErrMsg:
 		m.log.Log_Print(bridge.ErrMsg(msg))
-	case bridge.LightStateChangedMsg:
-		m.log.Log_Print(string(msg))
-	case bridge.FailedToChangeBrightness:
-		m.log.Log_Print(bridge.ErrMsg(msg))
-	case bridge.BrightnessChanged:
+	case bridge.ResourceSuccessMsg:
 		m.log.Log_Print(string(msg))
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -166,7 +162,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case bridge.DisplayingLights:
 				switch m.panel {
 				case bridge.LightPanel:
-					light := &m.lights.Items[m.lights.Cursor]
+					light := m.lights.Items[m.lights.Cursor]
 					if light.Dimming.Brightness > 0 && light.On {
 						bri := max(light.Dimming.Brightness-15, 0.0)
 						return m, bridge.Change_light_brightness(m.bridge, light, bri, m.user.Username)
@@ -180,7 +176,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case bridge.DisplayingLights:
 				switch m.panel {
 				case bridge.LightPanel:
-					light := &m.lights.Items[m.lights.Cursor]
+					light := m.lights.Items[m.lights.Cursor]
 					if light.Dimming.Brightness < 100 && light.On {
 						bri := min(light.Dimming.Brightness+15, 100.0)
 						return m, bridge.Change_light_brightness(m.bridge, light, bri, m.user.Username)
@@ -201,12 +197,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				switch m.panel {
 				case bridge.LightPanel:
 					//
-					light := &m.lights.Items[m.lights.Cursor]
+					light := m.lights.Items[m.lights.Cursor]
 					return m, bridge.Change_light_state(m.bridge, light, !light.On, m.user.Username)
 				case bridge.GroupPanel:
 					//
 				case bridge.ScenePanel:
-					//
+					scene := m.scenes.Items[m.scenes.Cursor]
+					return m, bridge.Pick_scene(m.bridge, scene, m.user.Username)
 				}
 			}
 		}

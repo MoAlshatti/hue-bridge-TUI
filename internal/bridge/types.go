@@ -47,18 +47,18 @@ type Light struct {
 // Light is a panel type which includes two array of lights(filtered/not filtered) and a panel cursor...
 type Lights struct {
 	//filtered lights showed based on the selected group
-	Items []Light
+	Items []*Light
 	// all lights no filters
 	AllItems []Light
 	Cursor   int
 }
 
-func (l *Lights) Increment() {
+func (l *Lights) increment() {
 	if l.Cursor < len(l.Items)-1 {
 		l.Cursor++
 	}
 }
-func (l *Lights) Decrement() {
+func (l *Lights) decrement() {
 	if l.Cursor > 0 {
 		l.Cursor--
 	}
@@ -86,12 +86,12 @@ type Groups struct {
 	Cursor int
 }
 
-func (g *Groups) Increment() {
+func (g *Groups) increment() {
 	if g.Cursor < len(g.Items)-1 {
 		g.Cursor++
 	}
 }
-func (g *Groups) Decrement() {
+func (g *Groups) decrement() {
 	if g.Cursor > 0 {
 		g.Cursor--
 	}
@@ -108,12 +108,12 @@ type UserPage struct {
 	Cursor int
 }
 
-func (u *UserPage) Increment() {
+func (u *UserPage) increment() {
 	if u.Cursor < len(u.Items)-1 {
 		u.Cursor++
 	}
 }
-func (u *UserPage) Decrement() {
+func (u *UserPage) decrement() {
 	if u.Cursor > 0 {
 		u.Cursor--
 	}
@@ -139,17 +139,17 @@ type Scene struct {
 
 type Scenes struct {
 	AllItems []Scene
-	Items    []Scene
+	Items    []*Scene
 	Cursor   int
 }
 
-func (s *Scenes) Increment() {
+func (s *Scenes) increment() {
 	if s.Cursor < len(s.Items)-1 {
 		s.Cursor++
 	}
 }
 
-func (s *Scenes) Decrement() {
+func (s *Scenes) decrement() {
 	if s.Cursor > 0 {
 		s.Cursor--
 	}

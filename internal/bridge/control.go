@@ -258,8 +258,8 @@ func Fetch_Scenes(b Bridge, appkey string, logger *LogFile) tea.Cmd {
 	}
 }
 
-type LightStateChangedMsg string
-type FailedToChangeLightMsg ErrMsg
+type ResourceErrMsg ErrMsg
+type ResourceSuccessMsg string
 
 func Change_light_state(b Bridge, light *Light, on bool, appkey string) tea.Cmd {
 	return func() tea.Msg {
@@ -269,44 +269,37 @@ func Change_light_state(b Bridge, light *Light, on bool, appkey string) tea.Cmd 
 		defer cancel()
 
 		body := struct {
-			On struct {
-				On bool `json:"on"`
-			} `json:"on"`
-		}{On: struct {
-			On bool `json:"on"`
-		}{on}}
+			On On `json:"on"`
+		}{On: On{on}}
 
 		var buff bytes.Buffer
 		json.NewEncoder(&buff).Encode(&body)
 
 		req, err := http.NewRequestWithContext(ctx, http.MethodPut, url, &buff)
 		if err != nil {
-			return FailedToChangeLightMsg(ErrMsg{err})
+			return ResourceErrMsg(ErrMsg{err})
 		}
 		set_header(req, appkey)
 		resp, err := client.Do(req)
 		if err != nil {
-			return FailedToChangeLightMsg(ErrMsg{err})
+			return ResourceErrMsg(ErrMsg{err})
 		}
 		defer resp.Body.Close()
 
 		if resp.StatusCode == http.StatusOK {
 			light.On = !light.On
-			return LightStateChangedMsg(fmt.Sprint(light.Metadata.Name, " state changed!"))
+			return ResourceSuccessMsg(fmt.Sprint(light.Metadata.Name, " state changed!"))
 		}
-		return FailedToChangeLightMsg(ErrMsg{errors.New(resp.Status + " Failed to change light state !")})
+		return ResourceErrMsg(ErrMsg{errors.New(resp.Status + " Failed to change light state !")})
 	}
 }
-
-type BrightnessChanged string
-type FailedToChangeBrightness ErrMsg
 
 func Change_light_brightness(b Bridge, light *Light, bri float64, appkey string) tea.Cmd {
 	return func() tea.Msg {
 
 		//this function should not be called if brightness is invalid, but this is a double check
 		if bri > 100.0 || bri < 0.0 {
-			return FailedToChangeBrightness(ErrMsg{errors.New("Invalid brightness!")})
+			return ResourceErrMsg(ErrMsg{errors.New("Invalid brightness!")})
 		}
 
 		url := fmt.Sprintf("https://%s/clip/v2/resource/light/%s", b.Ip_addr, light.ID)
@@ -329,19 +322,70 @@ func Change_light_brightness(b Bridge, light *Light, bri float64, appkey string)
 
 		req, err := http.NewRequestWithContext(ctx, http.MethodPut, url, &buff)
 		if err != nil {
-			return FailedToChangeBrightness(ErrMsg{err})
+			return ResourceErrMsg(ErrMsg{err})
 		}
 		set_header(req, appkey)
 		resp, err := client.Do(req)
 		if err != nil {
-			return FailedToChangeBrightness(ErrMsg{err})
+			return ResourceErrMsg(ErrMsg{err})
 		}
 		defer resp.Body.Close()
 
 		if resp.StatusCode == http.StatusOK {
 			light.Dimming.Brightness = bri
-			return BrightnessChanged(fmt.Sprint(light.Metadata.Name, " brightness changed!"))
+			return ResourceSuccessMsg(fmt.Sprint(light.Metadata.Name, " brightness changed!"))
 		}
-		return FailedToChangeBrightness(ErrMsg{errors.New(resp.Status + " Failed to change Brightness!")})
+		return ResourceErrMsg(ErrMsg{errors.New(resp.Status + " Failed to change Brightness!")})
+	}
+}
+
+func Pick_scene(b Bridge, scene *Scene, appkey string) tea.Cmd {
+	return func() tea.Msg {
+
+		url := fmt.Sprintf("https://%s/clip/v2/resource/scene/%s", b.Ip_addr, scene.ID)
+
+		ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+		defer cancel()
+
+		body := struct {
+			Recall struct {
+				Action string `json:"action"`
+			} `json:"recall"`
+		}{Recall: struct {
+			Action string `json:"action"`
+		}{"active"}}
+
+		var buff bytes.Buffer
+		json.NewEncoder(&buff).Encode(&body)
+
+		req, err := http.NewRequestWithContext(ctx, http.MethodPut, url, &buff)
+		if err != nil {
+			return ResourceErrMsg(ErrMsg{err})
+		}
+		set_header(req, appkey)
+
+		resp, err := client.Do(req)
+		if err != nil {
+			return ResourceErrMsg(ErrMsg{err})
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode == http.StatusOK {
+			scene.Active = true
+			return ResourceSuccessMsg(scene.Name + " has been picked sucessfully!")
+		}
+		return ResourceErrMsg(ErrMsg{errors.New(resp.Status + ": Failed to pick " + scene.Name)})
+	}
+}
+
+func Change_group_state(b Bridge, group *Group, on bool, appkey string) tea.Cmd {
+	return func() tea.Msg {
+		return ""
+	}
+}
+
+func Change_group_brightness(b Bridge, group *Group, bri float64, appkey string) tea.Cmd {
+	return func() tea.Msg {
+		return ""
 	}
 }
