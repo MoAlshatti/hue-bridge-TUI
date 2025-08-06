@@ -196,11 +196,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case bridge.DisplayingLights:
 				switch m.panel {
 				case bridge.LightPanel:
-					//
 					light := m.lights.Items[m.lights.Cursor]
 					return m, bridge.Change_light_state(m.bridge, light, !light.On, m.user.Username)
 				case bridge.GroupPanel:
-					//
+					if m.groups.Cursor > 0 {
+						group := &m.groups.Items[m.groups.Cursor]
+						return m, bridge.Change_group_state(m.bridge, group, !group.On, m.user.Username)
+					}
 				case bridge.ScenePanel:
 					scene := m.scenes.Items[m.scenes.Cursor]
 					return m, bridge.Pick_scene(m.bridge, scene, m.user.Username)

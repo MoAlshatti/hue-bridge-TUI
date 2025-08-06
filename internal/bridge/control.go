@@ -380,7 +380,35 @@ func Pick_scene(b Bridge, scene *Scene, appkey string) tea.Cmd {
 
 func Change_group_state(b Bridge, group *Group, on bool, appkey string) tea.Cmd {
 	return func() tea.Msg {
-		return ""
+		url := fmt.Sprintf("https://%s/clip/v2/resource/grouped_light/%s", b.Ip_addr, group.GroupID)
+
+		ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+		defer cancel()
+
+		body := struct {
+			On On `json:"on"`
+		}{On: On{on}}
+
+		var buff bytes.Buffer
+		json.NewEncoder(&buff).Encode(&body)
+
+		req, err := http.NewRequestWithContext(ctx, http.MethodPut, url, &buff)
+		if err != nil {
+			return ResourceErrMsg(ErrMsg{err})
+		}
+		set_header(req, appkey)
+
+		resp, err := client.Do(req)
+		if err != nil {
+			return ResourceErrMsg(ErrMsg{err})
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode == http.StatusOK {
+			group.On = !group.On
+			return ResourceSuccessMsg(group.Metadata.Name + " has been changed sucessfully!")
+		}
+		return ResourceErrMsg(ErrMsg{errors.New(resp.Status + ": Failed to change " + group.Metadata.Name)})
 	}
 }
 
