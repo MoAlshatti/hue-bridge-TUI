@@ -414,6 +414,40 @@ func Change_group_state(b Bridge, group *Group, on bool, appkey string) tea.Cmd 
 
 func Change_group_brightness(b Bridge, group *Group, bri float64, appkey string) tea.Cmd {
 	return func() tea.Msg {
-		return ""
+
+		url := fmt.Sprintf("https://%s/clip/v2/resource/grouped_light/%s", b.Ip_addr, group.GroupID)
+
+		ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+		defer cancel()
+
+		body := struct {
+			Dimming struct {
+				Brightness float64 `json:"brightness"`
+			} `json:"dimming"`
+		}{
+			Dimming: struct {
+				Brightness float64 `json:"brightness"`
+			}{bri},
+		}
+
+		var buff bytes.Buffer
+		json.NewEncoder(&buff).Encode(&body)
+
+		req, err := http.NewRequestWithContext(ctx, http.MethodPut, url, &buff)
+		if err != nil {
+			return ResourceErrMsg(ErrMsg{err})
+		}
+		set_header(req, appkey)
+		resp, err := client.Do(req)
+		if err != nil {
+			return ResourceErrMsg(ErrMsg{err})
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode == http.StatusOK {
+			group.Brightness = bri
+			return ResourceSuccessMsg(fmt.Sprint(group.Metadata.Name, " brightness changed!"))
+		}
+		return ResourceErrMsg(ErrMsg{errors.New(resp.Status + " Failed to change Brightness!")})
 	}
 }

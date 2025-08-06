@@ -167,6 +167,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						bri := max(light.Dimming.Brightness-15, 0.0)
 						return m, bridge.Change_light_brightness(m.bridge, light, bri, m.user.Username)
 					}
+				case bridge.GroupPanel:
+					group := &m.groups.Items[m.groups.Cursor]
+					if group.Brightness > 0 && group.On {
+						bri := max(group.Brightness-15, 0.0)
+						return m, bridge.Change_group_brightness(m.bridge, group, bri, m.user.Username)
+					}
 				}
 			}
 		case "l", "right":
@@ -181,7 +187,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						bri := min(light.Dimming.Brightness+15, 100.0)
 						return m, bridge.Change_light_brightness(m.bridge, light, bri, m.user.Username)
 					}
-
+				case bridge.GroupPanel:
+					group := &m.groups.Items[m.groups.Cursor]
+					if group.Brightness < 100 && group.On {
+						bri := min(group.Brightness+15, 100.0)
+						return m, bridge.Change_group_brightness(m.bridge, group, bri, m.user.Username)
+					}
 				}
 			}
 		case "enter":
