@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"time"
+
+	"github.com/charmbracelet/lipgloss"
 )
 
 type Event int
@@ -172,5 +174,7 @@ type LogFile struct {
 
 func (l *LogFile) Log_Print(v ...any) {
 	log.Println(v...)
-	l.Content = l.Content + fmt.Sprint(time.Now().Format(time.DateTime)) + " " + fmt.Sprintln(v...)
+	time := time.Now().Format(time.DateTime)
+	style := lipgloss.NewStyle().Foreground(lipgloss.Color("#4CBB17"))
+	l.Content = l.Content + fmt.Sprint(style.Render(time)) + " " + fmt.Sprintln(v...)
 }
