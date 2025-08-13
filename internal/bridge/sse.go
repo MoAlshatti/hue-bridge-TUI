@@ -2,6 +2,7 @@ package bridge
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"time"
 
@@ -38,8 +39,10 @@ type ColorUpdate struct {
 }
 type SceneStateUpdate struct {
 	SseUpdate
-	Active string
+	Status sceneStatus
 }
+
+//color temp update in the future mayhaps (ez but mehh)
 
 type SseFailedMsg ErrMsg
 
@@ -81,14 +84,13 @@ func Initiate_sse(b Bridge, appkey string, p *tea.Program) tea.Cmd {
 						p.Send(update)
 					case ColorUpdate:
 						p.Send(update)
+					case SceneStateUpdate:
+						p.Send(update)
 					default:
-						// do nothing
 					}
 				}
 			}
-
 		})
-
 		err = conn.Connect()
 		if err != nil {
 			return SseFailedMsg(ErrMsg{err})
@@ -123,10 +125,18 @@ func fetch_sse_update(obj map[string]any, sseupdate SseUpdate) any {
 		y := xy.(map[string]any)["y"]
 		return ColorUpdate{sseupdate, XyColor{x.(float64), y.(float64)}}
 
-	} else if _, ok := obj["status"]; ok {
-
+	} else if v, ok := obj["status"]; ok {
+		active := v.(map[string]any)["active"]
+		log.Println("active: ", active)
+		lastrecall := v.(map[string]any)["last_recall"]
+		switch lastrecall.(type) {
+		case time.Time:
+			return SceneStateUpdate{sseupdate, sceneStatus{active.(string), lastrecall.(time.Time)}}
+		default:
+			return SceneStateUpdate{sseupdate, sceneStatus{active.(string), time.Time{}}}
+		}
 	}
-	return nil
+	return "None"
 }
 
 func Update_light_status(lights *[]Light, status LightStateUpdate) {
@@ -149,6 +159,31 @@ func Update_group_brightness(groups *[]Group, status BriUpdate) {
 	for i := range *groups {
 		if (*groups)[i].GroupID == status.Id {
 			(*groups)[i].Brightness = status.Brightness
+			break
+		}
+	}
+}
+func Update_light_color(lights *[]Light, status ColorUpdate) {
+	for i := range *lights {
+		if (*lights)[i].ID == status.Id {
+			(*lights)[i].Color = status.Color
+			break
+		}
+	}
+
+}
+func Update_scene_status(scenes *[]Scene, status SceneStateUpdate) {
+	for i := range *scenes {
+		if (*scenes)[i].ID == status.Id {
+			if status.Status.Active == "inactive" {
+				(*scenes)[i].Active = false
+			} else {
+				(*scenes)[i].Active = true
+			}
+			t := time.Time{}
+			if status.Status.LastRecall != t {
+				(*scenes)[i].LastRecall = status.Status.LastRecall
+			}
 			break
 		}
 	}

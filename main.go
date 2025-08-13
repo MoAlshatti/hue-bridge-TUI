@@ -138,6 +138,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "grouped_light":
 			bridge.Update_group_brightness(&m.groups.Items, msg)
 		}
+	case bridge.ColorUpdate:
+		bridge.Update_light_color(&m.lights.AllItems, msg)
+	case bridge.SceneStateUpdate:
+		bridge.Update_scene_status(&m.scenes.AllItems, msg)
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
@@ -231,7 +235,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				case bridge.ScenePanel:
 					scene := m.scenes.Items[m.scenes.Cursor]
-					return m, bridge.Pick_scene(m.bridge, scene, m.user.Username)
+					if !scene.Active {
+						return m, bridge.Pick_scene(m.bridge, scene, m.user.Username)
+					}
 				}
 			}
 		}

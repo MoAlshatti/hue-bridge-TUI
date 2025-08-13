@@ -287,7 +287,7 @@ func Change_light_state(b Bridge, light *Light, on bool, appkey string) tea.Cmd 
 		defer resp.Body.Close()
 
 		if resp.StatusCode == http.StatusOK {
-			light.On = !light.On
+			//light.On = !light.On
 			return ResourceSuccessMsg(fmt.Sprint(light.Metadata.Name, " state changed!"))
 		}
 		return ResourceErrMsg(ErrMsg{errors.New(resp.Status + ": " + light.Metadata.Name + " Failed to change light state!")})
@@ -332,7 +332,6 @@ func Change_light_brightness(b Bridge, light *Light, bri float64, appkey string)
 		defer resp.Body.Close()
 
 		if resp.StatusCode == http.StatusOK {
-			light.Dimming.Brightness = bri
 			return ResourceSuccessMsg(fmt.Sprint(light.Metadata.Name, " brightness changed!"))
 		}
 		return ResourceErrMsg(ErrMsg{errors.New(resp.Status + ": " + light.Metadata.Name + " Failed to change Brightness!")})
@@ -371,7 +370,6 @@ func Pick_scene(b Bridge, scene *Scene, appkey string) tea.Cmd {
 		defer resp.Body.Close()
 
 		if resp.StatusCode == http.StatusOK {
-			scene.Active = true
 			return ResourceSuccessMsg(scene.Name + " has been picked sucessfully!")
 		}
 		return ResourceErrMsg(ErrMsg{errors.New(resp.Status + ": Failed to pick " + scene.Name)})
