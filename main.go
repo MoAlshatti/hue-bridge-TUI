@@ -11,13 +11,15 @@ import (
 
 const logFileName = ".debug.log"
 
+var p *tea.Program
+
 func main() {
 	file, err := tea.LogToFile(logFileName, "")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer file.Close()
-	p := tea.NewProgram(initalModel(), tea.WithAltScreen())
+	p = tea.NewProgram(initalModel(), tea.WithAltScreen())
 	_, err = p.Run()
 	if err != nil {
 		log.Fatal(err)
@@ -74,7 +76,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case bridge.UserFoundMsg:
 		m.event = bridge.FetchingLights
 		m.user.Username = string(msg)
-		return m, tea.Batch(bridge.Fetch_groups(m.bridge, m.user.Username, m.log))
+		return m, tea.Batch(bridge.Fetch_groups(m.bridge, m.user.Username, m.log),
+			bridge.Initiate_sse(m.bridge, m.user.Username, p))
 	case bridge.ClientCreatedMsg:
 		return m, bridge.Find_bridges
 	case bridge.NoClientCreatedMsg:
@@ -85,7 +88,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.user.Username = string(msg)
 		m.event = bridge.FetchingLights
 		return m, tea.Batch(bridge.Save_Username(string(msg)),
-			bridge.Fetch_groups(m.bridge, m.user.Username, m.log))
+			bridge.Fetch_groups(m.bridge, m.user.Username, m.log),
+			bridge.Initiate_sse(m.bridge, m.user.Username, p))
 	case bridge.UserCreationFailedMsg:
 		m.log.Log_Print("Failed to create user, err: ", bridge.ErrMsg(msg))
 		return m, tea.Quit
@@ -94,6 +98,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case bridge.FailedFetchingLightsMsg:
 		m.log.Log_Print(bridge.ErrMsg(msg))
 		return m, tea.Quit
+	case bridge.SseFailedMsg:
+		m.log.Log_Print("sse failed: ", msg)
 	case bridge.LightsMsg:
 		m.log.Log_Print("Lights Fetched!")
 		m.lights.AllItems = []bridge.Light(msg)
@@ -123,6 +129,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.log.Log_Print(bridge.ErrMsg(msg))
 	case bridge.ResourceSuccessMsg:
 		m.log.Log_Print(string(msg))
+	case bridge.LightStateUpdate:
+		bridge.Update_light_status(&m.lights.AllItems, msg)
+	case bridge.BriUpdate:
+		switch msg.Type {
+		case "light":
+			bridge.Update_light_brightness(&m.lights.AllItems, msg)
+		case "grouped_light":
+			bridge.Update_group_brightness(&m.groups.Items, msg)
+		}
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":

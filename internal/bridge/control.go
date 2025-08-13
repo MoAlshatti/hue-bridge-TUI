@@ -290,7 +290,7 @@ func Change_light_state(b Bridge, light *Light, on bool, appkey string) tea.Cmd 
 			light.On = !light.On
 			return ResourceSuccessMsg(fmt.Sprint(light.Metadata.Name, " state changed!"))
 		}
-		return ResourceErrMsg(ErrMsg{errors.New(resp.Status + " Failed to change light state !")})
+		return ResourceErrMsg(ErrMsg{errors.New(resp.Status + ": " + light.Metadata.Name + " Failed to change light state!")})
 	}
 }
 
@@ -335,7 +335,7 @@ func Change_light_brightness(b Bridge, light *Light, bri float64, appkey string)
 			light.Dimming.Brightness = bri
 			return ResourceSuccessMsg(fmt.Sprint(light.Metadata.Name, " brightness changed!"))
 		}
-		return ResourceErrMsg(ErrMsg{errors.New(resp.Status + " Failed to change Brightness!")})
+		return ResourceErrMsg(ErrMsg{errors.New(resp.Status + ": " + light.Metadata.Name + " Failed to change Brightness!")})
 	}
 }
 

@@ -137,6 +137,10 @@ type ApiLights struct {
 		Type string `json:"type"`
 	} `json:"data"`
 }
+type sceneStatus struct {
+	Active     string    `json:"active"`
+	LastRecall time.Time `json:"last_recall"`
+}
 
 type ApiScene struct {
 	Errors []ApiError `json:"errors"`
@@ -187,13 +191,10 @@ type ApiScene struct {
 			Rid   string `json:"rid"`
 			Rtype string `json:"rtype"`
 		} `json:"group"`
-		Speed       float64 `json:"speed"`
-		AutoDynamic bool    `json:"auto_dynamic"`
-		Status      struct {
-			Active     string    `json:"active"`
-			LastRecall time.Time `json:"last_recall"`
-		} `json:"status"`
-		Type string `json:"type"`
+		Speed       float64     `json:"speed"`
+		AutoDynamic bool        `json:"auto_dynamic"`
+		Status      sceneStatus `json:"status"`
+		Type        string      `json:"type"`
 	} `json:"data"`
 }
 
