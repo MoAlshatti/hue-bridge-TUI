@@ -130,8 +130,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.log.Log_Print(bridge.ErrMsg(msg))
 	case bridge.ResourceSuccessMsg:
 		m.log.Log_Print(string(msg))
-	case bridge.LightStateUpdate:
-		bridge.Update_light_status(&m.lights.AllItems, msg)
+	case bridge.StateUpdate:
+		switch msg.Type {
+		case "light":
+			bridge.Update_light_status(&m.lights.AllItems, msg)
+		case "grouped_light":
+			bridge.Update_group_status(&m.groups.Items, msg)
+		}
 	case bridge.BriUpdate:
 		switch msg.Type {
 		case "light":

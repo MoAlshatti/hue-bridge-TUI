@@ -23,7 +23,7 @@ type SseUpdate struct {
 	Type string
 }
 
-type LightStateUpdate struct {
+type StateUpdate struct {
 	SseUpdate
 	On bool
 }
@@ -77,7 +77,7 @@ func Initiate_sse(b Bridge, appkey string, p *tea.Program) tea.Cmd {
 					// 2- check the update type
 					update := fetch_sse_update(v, sseUpdate)
 					switch update := update.(type) {
-					case LightStateUpdate:
+					case StateUpdate:
 						p.Send(update)
 					case BriUpdate:
 						p.Send(update)
@@ -113,7 +113,7 @@ func find_sse_update(obj map[string]any) (s SseUpdate) {
 func fetch_sse_update(obj map[string]any, sseupdate SseUpdate) any {
 	if v, ok := obj["on"]; ok {
 		on := v.(map[string]any)["on"]
-		return LightStateUpdate{sseupdate, on.(bool)}
+		return StateUpdate{sseupdate, on.(bool)}
 	} else if v, ok := obj["dimming"]; ok {
 		bri := v.(map[string]any)["brightness"]
 		return BriUpdate{sseupdate, bri.(float64)}
@@ -137,13 +137,22 @@ func fetch_sse_update(obj map[string]any, sseupdate SseUpdate) any {
 	return "None"
 }
 
-func Update_light_status(lights *[]Light, status LightStateUpdate) {
+func Update_light_status(lights *[]Light, status StateUpdate) {
 	for i := range *lights {
 		if (*lights)[i].ID == status.Id {
 			(*lights)[i].On = status.On
 			break
 		}
 	}
+}
+func Update_group_status(groups *[]Group, status StateUpdate) {
+	for i := range *groups {
+		if (*groups)[i].GroupID == status.Id {
+			(*groups)[i].On = status.On
+			break
+		}
+	}
+
 }
 func Update_light_brightness(lights *[]Light, status BriUpdate) {
 	for i := range *lights {
