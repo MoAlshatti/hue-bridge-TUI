@@ -6,6 +6,7 @@ import (
 
 	"github.com/MoAlshatti/hue-bridge-TUI/internal/bridge"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/lucasb-eyer/go-colorful"
 )
 
 func Render_light_title(title string, bri float64, on bool, selected bool, width, height int) string {
@@ -93,9 +94,18 @@ func Render_light_details(l bridge.Light, width, height int) string {
 	function := style.Render(fmt.Sprintln("Function: ", l.Metadata.Function))
 	id := style.Render(fmt.Sprintln("ID: ", l.ID))
 	var color []string
+
+	col := colorful.Xyy(l.Color.X, l.Color.Y, 1)
+	hexCol := col.Clamped().Hex()
+	renderedCol := lipgloss.NewStyle().Background(lipgloss.Color(hexCol))
 	color = append(color, style.Render("Color: "))
-	color = append(color, style.Render(fmt.Sprint("  Y: ", l.Color.Y)))
-	color = append(color, style.Render(fmt.Sprintln("  X:", l.Color.X)))
+	color = append(color, style.Render(fmt.Sprint("  X: ", l.Color.X)))
+	if l.Color.X == 0 && l.Color.Y == 0 {
+		color = append(color, style.Render(fmt.Sprintln("  Y:", l.Color.Y)))
+	} else {
+		color = append(color, style.Render(fmt.Sprint("  Y: ", l.Color.Y)))
+		color = append(color, "  "+renderedCol.Render("        ")+"\n")
+	}
 
 	var colortemp []string
 	colortemp = append(colortemp, style.Render("Color Temperature: "))
