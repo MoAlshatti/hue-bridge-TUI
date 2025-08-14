@@ -2,7 +2,6 @@ package bridge
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"time"
 
@@ -127,7 +126,6 @@ func fetch_sse_update(obj map[string]any, sseupdate SseUpdate) any {
 
 	} else if v, ok := obj["status"]; ok {
 		active := v.(map[string]any)["active"]
-		log.Println("active: ", active)
 		lastrecall := v.(map[string]any)["last_recall"]
 		switch lastrecall.(type) {
 		case time.Time:
