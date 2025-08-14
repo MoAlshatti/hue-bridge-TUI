@@ -18,6 +18,7 @@ const (
 	RequestPressButton
 	CreateUser //do we need it?
 	FetchingLights
+	FetchingGroups
 	DisplayingLights
 )
 

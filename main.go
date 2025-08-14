@@ -74,7 +74,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.log.Log_Print(bridge.ErrMsg(msg))
 		m.event = bridge.RequestPressButton
 	case bridge.UserFoundMsg:
-		m.event = bridge.FetchingLights
+		m.event = bridge.FetchingGroups
 		m.user.Username = string(msg)
 		return m, tea.Batch(bridge.Fetch_groups(m.bridge, m.user.Username, m.log),
 			bridge.Initiate_sse(m.bridge, m.user.Username, p))
@@ -86,7 +86,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case bridge.UserCreatedMsg:
 		m.log.Log_Print("User Created Successfully!")
 		m.user.Username = string(msg)
-		m.event = bridge.FetchingLights
+		m.event = bridge.FetchingGroups
 		return m, tea.Batch(bridge.Save_Username(string(msg)),
 			bridge.Fetch_groups(m.bridge, m.user.Username, m.log),
 			bridge.Initiate_sse(m.bridge, m.user.Username, p))
@@ -116,6 +116,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			Archetype string
 		}{Name: "None"}})
 		m.groups.Items = append(m.groups.Items, []bridge.Group(msg)...)
+		m.event = bridge.FetchingLights
 		return m, tea.Batch(bridge.Fetch_lights(m.bridge, m.user.Username, m.log),
 			bridge.Fetch_Scenes(m.bridge, m.user.Username, m.log))
 	case bridge.FailedToFetchScenesMsg:
@@ -270,5 +271,5 @@ func (m model) View() string {
 		output := lipgloss.JoinHorizontal(lipgloss.Top, leftSide, rightSide)
 		return output
 	}
-	return " "
+	return lipgloss.Place(m.win.width, m.win.height, lipgloss.Center, lipgloss.Center, view.Render_loading_text(m.event))
 }
