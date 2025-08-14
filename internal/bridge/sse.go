@@ -137,59 +137,59 @@ func fetch_sse_update(obj map[string]any, sseupdate SseUpdate) any {
 	return "None"
 }
 
-func Update_light_status(lights *[]Light, status StateUpdate) {
-	for i := range *lights {
-		if (*lights)[i].ID == status.Id {
-			(*lights)[i].On = status.On
+func Update_light_status(lights []Light, status StateUpdate) {
+	for i := range lights {
+		if lights[i].ID == status.Id {
+			lights[i].On = status.On
 			break
 		}
 	}
 }
-func Update_group_status(groups *[]Group, status StateUpdate) {
-	for i := range *groups {
-		if (*groups)[i].GroupID == status.Id {
-			(*groups)[i].On = status.On
-			break
-		}
-	}
-
-}
-func Update_light_brightness(lights *[]Light, status BriUpdate) {
-	for i := range *lights {
-		if (*lights)[i].ID == status.Id {
-			(*lights)[i].Dimming.Brightness = status.Brightness
-			break
-		}
-	}
-}
-func Update_group_brightness(groups *[]Group, status BriUpdate) {
-	for i := range *groups {
-		if (*groups)[i].GroupID == status.Id {
-			(*groups)[i].Brightness = status.Brightness
-			break
-		}
-	}
-}
-func Update_light_color(lights *[]Light, status ColorUpdate) {
-	for i := range *lights {
-		if (*lights)[i].ID == status.Id {
-			(*lights)[i].Color = status.Color
+func Update_group_status(groups []Group, status StateUpdate) {
+	for i := range groups {
+		if groups[i].GroupID == status.Id {
+			groups[i].On = status.On
 			break
 		}
 	}
 
 }
-func Update_scene_status(scenes *[]Scene, status SceneStateUpdate) {
-	for i := range *scenes {
-		if (*scenes)[i].ID == status.Id {
+func Update_light_brightness(lights []Light, status BriUpdate) {
+	for i := range lights {
+		if lights[i].ID == status.Id {
+			lights[i].Dimming.Brightness = status.Brightness
+			break
+		}
+	}
+}
+func Update_group_brightness(groups []Group, status BriUpdate) {
+	for i := range groups {
+		if groups[i].GroupID == status.Id {
+			groups[i].Brightness = status.Brightness
+			break
+		}
+	}
+}
+func Update_light_color(lights []Light, status ColorUpdate) {
+	for i := range lights {
+		if lights[i].ID == status.Id {
+			lights[i].Color = status.Color
+			break
+		}
+	}
+
+}
+func Update_scene_status(scenes []Scene, status SceneStateUpdate) {
+	for i := range scenes {
+		if scenes[i].ID == status.Id {
 			if status.Status.Active == "inactive" {
-				(*scenes)[i].Active = false
+				scenes[i].Active = false
 			} else {
-				(*scenes)[i].Active = true
+				scenes[i].Active = true
 			}
 			t := time.Time{}
 			if status.Status.LastRecall != t {
-				(*scenes)[i].LastRecall = status.Status.LastRecall
+				scenes[i].LastRecall = status.Status.LastRecall
 			}
 			break
 		}

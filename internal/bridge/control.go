@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -71,6 +72,7 @@ func Fetch_lights(b Bridge, appkey string, logger *LogFile) tea.Cmd {
 			light.owner.Rtype = v.Owner.Rtype
 			light.ColorTemp = v.ColorTemperature
 			light.On = v.On.On
+			light.Connected = true
 			lights = append(lights, light)
 		}
 
@@ -258,10 +260,55 @@ func Fetch_Scenes(b Bridge, appkey string, logger *LogFile) tea.Cmd {
 	}
 }
 
+type ConnectivityMsg []Connectivity
+
+func Fetch_connectivity(b Bridge, appkey string) tea.Cmd {
+	return func() tea.Msg {
+		//
+		url := fmt.Sprintf("https://%s/clip/v2/resource/zigbee_connectivity", b.Ip_addr)
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+		if err != nil {
+			return ResourceErrMsg(ErrMsg{err})
+		}
+		set_header(req, appkey)
+
+		resp, err := client.Do(req)
+		if err != nil {
+			return ResourceErrMsg(ErrMsg{err})
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			return ResourceErrMsg(ErrMsg{fmt.Errorf("http error: %v", resp.Status)})
+		}
+
+		defer resp.Body.Close()
+
+		decoder := json.NewDecoder(resp.Body)
+		var apiConn ApiConnectivity
+		err = decoder.Decode(&apiConn)
+		if err != nil {
+			return ResourceErrMsg(ErrMsg{err})
+		}
+
+		for _, v := range apiConn.Errors {
+			log.Println(v.Error.Description)
+		}
+		var connectedDevices []Connectivity
+		for _, v := range apiConn.Data {
+			connectedDevices = append(connectedDevices, Connectivity{v.Owner.Rid, v.Status})
+		}
+		return ConnectivityMsg(connectedDevices)
+	}
+}
+
 type ResourceErrMsg ErrMsg
 type ResourceSuccessMsg string
 
-func Change_light_state(b Bridge, light *Light, on bool, appkey string) tea.Cmd {
+func Change_light_state(b Bridge, light Light, on bool, appkey string) tea.Cmd {
 	return func() tea.Msg {
 		url := fmt.Sprintf("https://%s/clip/v2/resource/light/%s", b.Ip_addr, light.ID)
 
@@ -294,7 +341,7 @@ func Change_light_state(b Bridge, light *Light, on bool, appkey string) tea.Cmd 
 	}
 }
 
-func Change_light_brightness(b Bridge, light *Light, bri float64, appkey string) tea.Cmd {
+func Change_light_brightness(b Bridge, light Light, bri float64, appkey string) tea.Cmd {
 	return func() tea.Msg {
 
 		//this function should not be called if brightness is invalid, but this is a double check
@@ -338,7 +385,7 @@ func Change_light_brightness(b Bridge, light *Light, bri float64, appkey string)
 	}
 }
 
-func Pick_scene(b Bridge, scene *Scene, appkey string) tea.Cmd {
+func Pick_scene(b Bridge, scene Scene, appkey string) tea.Cmd {
 	return func() tea.Msg {
 
 		url := fmt.Sprintf("https://%s/clip/v2/resource/scene/%s", b.Ip_addr, scene.ID)
@@ -376,7 +423,7 @@ func Pick_scene(b Bridge, scene *Scene, appkey string) tea.Cmd {
 	}
 }
 
-func Change_group_state(b Bridge, group *Group, on bool, appkey string) tea.Cmd {
+func Change_group_state(b Bridge, group Group, on bool, appkey string) tea.Cmd {
 	return func() tea.Msg {
 		url := fmt.Sprintf("https://%s/clip/v2/resource/grouped_light/%s", b.Ip_addr, group.GroupID)
 
@@ -410,7 +457,7 @@ func Change_group_state(b Bridge, group *Group, on bool, appkey string) tea.Cmd 
 	}
 }
 
-func Change_group_brightness(b Bridge, group *Group, bri float64, appkey string) tea.Cmd {
+func Change_group_brightness(b Bridge, group Group, bri float64, appkey string) tea.Cmd {
 	return func() tea.Msg {
 
 		url := fmt.Sprintf("https://%s/clip/v2/resource/grouped_light/%s", b.Ip_addr, group.GroupID)

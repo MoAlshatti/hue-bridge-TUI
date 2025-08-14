@@ -106,6 +106,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// populate Items based on the chosen room
 		bridge.Filter_lights(&m.lights, m.groups)
 		m.event = bridge.DisplayingLights
+		return m, bridge.Fetch_connectivity(m.bridge, m.user.Username)
 	case bridge.FailedToFetchGroupsMsg:
 		m.log.Log_Print(bridge.ErrMsg(msg))
 		return m, tea.Quit
@@ -130,24 +131,27 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.log.Log_Print(bridge.ErrMsg(msg))
 	case bridge.ResourceSuccessMsg:
 		m.log.Log_Print(string(msg))
+	case bridge.ConnectivityMsg:
+		log.Println("conns: ", msg)
+		bridge.Sort_Connectivity(&m.lights, msg)
 	case bridge.StateUpdate:
 		switch msg.Type {
 		case "light":
-			bridge.Update_light_status(&m.lights.AllItems, msg)
+			bridge.Update_light_status(m.lights.AllItems, msg)
 		case "grouped_light":
-			bridge.Update_group_status(&m.groups.Items, msg)
+			bridge.Update_group_status(m.groups.Items, msg)
 		}
 	case bridge.BriUpdate:
 		switch msg.Type {
 		case "light":
-			bridge.Update_light_brightness(&m.lights.AllItems, msg)
+			bridge.Update_light_brightness(m.lights.AllItems, msg)
 		case "grouped_light":
-			bridge.Update_group_brightness(&m.groups.Items, msg)
+			bridge.Update_group_brightness(m.groups.Items, msg)
 		}
 	case bridge.ColorUpdate:
-		bridge.Update_light_color(&m.lights.AllItems, msg)
+		bridge.Update_light_color(m.lights.AllItems, msg)
 	case bridge.SceneStateUpdate:
-		bridge.Update_scene_status(&m.scenes.AllItems, msg)
+		bridge.Update_scene_status(m.scenes.AllItems, msg)
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
@@ -187,13 +191,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case bridge.DisplayingLights:
 				switch m.panel {
 				case bridge.LightPanel:
-					light := m.lights.Items[m.lights.Cursor]
+					light := *m.lights.Items[m.lights.Cursor]
 					if light.Dimming.Brightness > 0 && light.On {
 						bri := max(light.Dimming.Brightness-15, 0.0)
 						return m, bridge.Change_light_brightness(m.bridge, light, bri, m.user.Username)
 					}
 				case bridge.GroupPanel:
-					group := &m.groups.Items[m.groups.Cursor]
+					group := m.groups.Items[m.groups.Cursor]
 					if group.Brightness > 0 && group.On {
 						bri := max(group.Brightness-15, 0.0)
 						return m, bridge.Change_group_brightness(m.bridge, group, bri, m.user.Username)
@@ -207,13 +211,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case bridge.DisplayingLights:
 				switch m.panel {
 				case bridge.LightPanel:
-					light := m.lights.Items[m.lights.Cursor]
+					light := *m.lights.Items[m.lights.Cursor]
 					if light.Dimming.Brightness < 100 && light.On {
 						bri := min(light.Dimming.Brightness+15, 100.0)
 						return m, bridge.Change_light_brightness(m.bridge, light, bri, m.user.Username)
 					}
 				case bridge.GroupPanel:
-					group := &m.groups.Items[m.groups.Cursor]
+					group := m.groups.Items[m.groups.Cursor]
 					if group.Brightness < 100 && group.On {
 						bri := min(group.Brightness+15, 100.0)
 						return m, bridge.Change_group_brightness(m.bridge, group, bri, m.user.Username)
@@ -232,15 +236,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case bridge.DisplayingLights:
 				switch m.panel {
 				case bridge.LightPanel:
-					light := m.lights.Items[m.lights.Cursor]
-					return m, bridge.Change_light_state(m.bridge, light, !light.On, m.user.Username)
+					light := *m.lights.Items[m.lights.Cursor]
+					if light.Connected {
+						return m, bridge.Change_light_state(m.bridge, light, !light.On, m.user.Username)
+					}
 				case bridge.GroupPanel:
 					if m.groups.Cursor > 0 {
-						group := &m.groups.Items[m.groups.Cursor]
+						group := m.groups.Items[m.groups.Cursor]
 						return m, bridge.Change_group_state(m.bridge, group, !group.On, m.user.Username)
 					}
 				case bridge.ScenePanel:
-					scene := m.scenes.Items[m.scenes.Cursor]
+					scene := *m.scenes.Items[m.scenes.Cursor]
 					if !scene.Active {
 						return m, bridge.Pick_scene(m.bridge, scene, m.user.Username)
 					}

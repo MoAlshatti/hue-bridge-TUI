@@ -1,5 +1,10 @@
 package bridge
 
+import (
+	"log"
+	"slices"
+)
+
 // Filters lights based on the selected group
 func Filter_lights(l *Lights, g Groups) {
 
@@ -43,4 +48,28 @@ func Filter_scenes(s *Scenes, g Groups) {
 	}
 	s.Items = scenes
 	s.Cursor = 0
+}
+
+func Sort_Connectivity(l *Lights, connDevices []Connectivity) {
+	for _, v := range connDevices {
+		for i := range l.AllItems {
+			if v.ID == l.AllItems[i].owner.Rid {
+				log.Println("ID MATCH!")
+				switch v.Status {
+				case "connectivity_issue":
+					l.AllItems[i].Connected = false
+				case "connected":
+					l.AllItems[i].Connected = true
+				}
+			}
+		}
+	}
+	slices.SortStableFunc(l.AllItems, func(l1, l2 Light) int {
+		if l1.Connected && !l2.Connected {
+			return -1
+		} else if !l1.Connected && l2.Connected {
+			return 1
+		}
+		return 0
+	})
 }

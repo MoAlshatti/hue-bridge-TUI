@@ -248,3 +248,17 @@ type ApiGroupedLights struct {
 		Type string `json:"type"`
 	} `json:"data"`
 }
+
+type Data struct {
+	ID     string `json:"id"`
+	Status string `json:"status"`
+	Owner  struct {
+		Rid   string `json:"rid"`
+		Rtype string `json:"rtype"`
+	} `json:"owner"`
+}
+
+type ApiConnectivity struct {
+	Errors []ApiError `json:"errors"`
+	Data   []Data     `json:"data"`
+}

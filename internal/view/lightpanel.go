@@ -9,10 +9,12 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 )
 
-func Render_light_title(title string, bri float64, on bool, selected bool, width, height int) string {
+func Render_light_title(title string, bri float64, on, connected, selected bool, width, height int) string {
 
 	status := ""
-	if !on {
+	if !connected {
+		status = "Uncreachable "
+	} else if !on {
 		status = "OFF "
 	} else {
 		status = fmt.Sprint(int(bri), "% ")
@@ -78,7 +80,7 @@ func Render_lights(l bridge.Lights, g bridge.Groups, p bridge.Panel, width, heig
 	for i, v := range l.Items {
 		lights = append(lights, Render_light_title(v.Metadata.Name,
 			v.Dimming.Brightness,
-			v.On, i == l.Cursor && p == bridge.LightPanel, width, height))
+			v.On, v.Connected, i == l.Cursor && p == bridge.LightPanel, width, height))
 	}
 	return Render_light_panel(lights, p == bridge.LightPanel, l.Cursor, width, height)
 }

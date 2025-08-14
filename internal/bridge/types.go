@@ -39,6 +39,7 @@ type Light struct {
 	Metadata  Metadata
 	Color     XyColor
 	owner     Owner
+	Connected bool
 	Dimming   Dimming
 	Preset    string
 	MirekMax  int
@@ -168,6 +169,11 @@ type ErrMsg struct {
 }
 
 func (e ErrMsg) Error() string { return e.Err.Error() }
+
+type Connectivity struct {
+	ID     string
+	Status string
+}
 
 type LogFile struct {
 	Content string
