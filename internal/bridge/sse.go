@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/tmaxmax/go-sse"
 )
 
@@ -141,6 +141,7 @@ func Update_light_status(lights []Light, status StateUpdate) {
 	for i := range lights {
 		if lights[i].ID == status.Id {
 			lights[i].On = status.On
+			lights[i].Connected = true
 			break
 		}
 	}
@@ -158,6 +159,7 @@ func Update_light_brightness(lights []Light, status BriUpdate) {
 	for i := range lights {
 		if lights[i].ID == status.Id {
 			lights[i].Dimming.Brightness = status.Brightness
+			lights[i].Connected = true
 			break
 		}
 	}

@@ -56,7 +56,7 @@ func Sort_Connectivity(l *Lights, connDevices []Connectivity) {
 			if v.ID == l.AllItems[i].owner.Rid {
 				log.Println("ID MATCH!")
 				switch v.Status {
-				case "connectivity_issue":
+				case "connectivity_issue", "disconnected":
 					l.AllItems[i].Connected = false
 				case "connected":
 					l.AllItems[i].Connected = true

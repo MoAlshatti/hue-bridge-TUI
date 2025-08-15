@@ -53,5 +53,5 @@ func get_logpanel_height(height int) int {
 	return get_scenepanel_height(height)
 }
 func get_colormodal_height(height int) int {
-	return int(0.25 * float64(height))
+	return int(0.4 * float64(height))
 }

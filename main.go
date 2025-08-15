@@ -5,7 +5,7 @@ import (
 
 	"github.com/MoAlshatti/hue-bridge-TUI/internal/bridge"
 	"github.com/MoAlshatti/hue-bridge-TUI/internal/view"
-	tea "github.com/charmbracelet/bubbletea"
+	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -225,7 +225,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "c":
 			if m.panel == bridge.LightPanel && m.event == bridge.DisplayingLights {
-				m.event = bridge.DisplayingColors
+				light := m.lights.Items[m.lights.Cursor]
+				if light.Connected {
+					m.event = bridge.DisplayingColors
+				}
 			}
 		case "esc":
 			switch m.event {
