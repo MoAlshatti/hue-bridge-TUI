@@ -165,24 +165,39 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "4":
 			m.panel = bridge.ScenePanel
 		case "j", "down":
-			if m.panel == bridge.GroupPanel {
-				bridge.Increment_cursor(&m.groups)
-				bridge.Filter_lights(&m.lights, m.groups)
-				bridge.Filter_scenes(&m.scenes, m.groups)
-			} else if m.panel == bridge.LightPanel {
-				bridge.Increment_cursor(&m.lights)
-			} else if m.panel == bridge.ScenePanel {
-				bridge.Increment_cursor(&m.scenes)
+			switch m.event {
+			case bridge.DisplayingLights:
+				if m.panel == bridge.GroupPanel {
+					bridge.Increment_cursor(&m.groups)
+					bridge.Filter_lights(&m.lights, m.groups)
+					bridge.Filter_scenes(&m.scenes, m.groups)
+				} else if m.panel == bridge.LightPanel {
+					bridge.Increment_cursor(&m.lights)
+				} else if m.panel == bridge.ScenePanel {
+					bridge.Increment_cursor(&m.scenes)
+				}
+			case bridge.DisplayingBrightness:
+				//
+			case bridge.DisplayingColors:
+				//
 			}
+
 		case "k", "up":
-			if m.panel == bridge.GroupPanel {
-				bridge.Decrement_cusror(&m.groups)
-				bridge.Filter_lights(&m.lights, m.groups)
-				bridge.Filter_scenes(&m.scenes, m.groups)
-			} else if m.panel == bridge.LightPanel {
-				bridge.Decrement_cusror(&m.lights)
-			} else if m.panel == bridge.ScenePanel {
-				bridge.Decrement_cusror(&m.scenes)
+			switch m.event {
+			case bridge.DisplayingLights:
+				if m.panel == bridge.GroupPanel {
+					bridge.Decrement_cusror(&m.groups)
+					bridge.Filter_lights(&m.lights, m.groups)
+					bridge.Filter_scenes(&m.scenes, m.groups)
+				} else if m.panel == bridge.LightPanel {
+					bridge.Decrement_cusror(&m.lights)
+				} else if m.panel == bridge.ScenePanel {
+					bridge.Decrement_cusror(&m.scenes)
+				}
+			case bridge.DisplayingBrightness:
+				//
+			case bridge.DisplayingColors:
+				//
 			}
 		case "h", "left":
 			switch m.event {
@@ -203,6 +218,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, bridge.Change_group_brightness(m.bridge, group, bri, m.user.Username)
 					}
 				}
+			case bridge.DisplayingBrightness:
+				//
+			case bridge.DisplayingColors:
+				//
+			}
+		case "c":
+			if m.panel == bridge.LightPanel && m.event == bridge.DisplayingLights {
+				m.event = bridge.DisplayingColors
+			}
+		case "esc":
+			switch m.event {
+			case bridge.DisplayingColors:
+				m.event = bridge.DisplayingLights
 			}
 		case "l", "right":
 			switch m.event {
@@ -251,6 +279,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, bridge.Pick_scene(m.bridge, scene, m.user.Username)
 					}
 				}
+			case bridge.DisplayingBrightness:
+				//
+			case bridge.DisplayingColors:
+				//
 			}
 		}
 	}
@@ -262,7 +294,7 @@ func (m model) View() string {
 	case bridge.RequestPressButton:
 		userpage := view.Render_userpage(m.userpage)
 		return lipgloss.Place(m.win.width, m.win.height, lipgloss.Center, lipgloss.Center, userpage)
-	case bridge.DisplayingLights:
+	case bridge.DisplayingLights, bridge.DisplayingBrightness, bridge.DisplayingColors:
 		bridgepanel := view.Render_bridge(m.bridge, m.panel, m.win.width, m.win.height)
 
 		grouppanel := view.Render_group(m.groups, m.panel, m.win.width, m.win.height)
@@ -279,7 +311,16 @@ func (m model) View() string {
 		leftSide := lipgloss.JoinVertical(lipgloss.Left, bridgepanel, grouppanel, lightpanel, scenePanel)
 		rightSide := lipgloss.JoinVertical(lipgloss.Bottom, detailsPanel, logPanel)
 
-		output := lipgloss.JoinHorizontal(lipgloss.Top, leftSide, rightSide)
+		output := lipgloss.JoinHorizontal(lipgloss.Right, leftSide, rightSide)
+
+		// deal with brighntess and color canvases here
+		if m.event == bridge.DisplayingColors {
+			output = view.Render_color_modal(output, m.win.width, m.win.height)
+			//
+		} else if m.event == bridge.DisplayingBrightness {
+			//
+		}
+
 		return output
 	}
 	return lipgloss.Place(m.win.width, m.win.height, lipgloss.Center, lipgloss.Center, view.Render_loading_text(m.event))

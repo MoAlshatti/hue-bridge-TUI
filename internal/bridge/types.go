@@ -20,6 +20,8 @@ const (
 	FetchingLights
 	FetchingGroups
 	DisplayingLights
+	DisplayingColors
+	DisplayingBrightness
 )
 
 type Panel int
