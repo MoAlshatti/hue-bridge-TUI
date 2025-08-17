@@ -32,25 +32,29 @@ type window struct {
 }
 
 type model struct {
-	win      window
-	log      *bridge.LogFile
-	userpage bridge.UserPage
-	bridge   bridge.Bridge
-	user     bridge.User
-	groups   bridge.Groups
-	scenes   bridge.Scenes
-	lights   bridge.Lights
-	panel    bridge.Panel
-	event    bridge.Event
+	win        window
+	log        *bridge.LogFile
+	userpage   bridge.UserPage
+	bridge     bridge.Bridge
+	user       bridge.User
+	groups     bridge.Groups
+	scenes     bridge.Scenes
+	brightness bridge.BrightnessModal
+	lights     bridge.Lights
+	panel      bridge.Panel
+	event      bridge.Event
 }
 
 func initalModel() model {
+	bm := bridge.BrightnessModal{}
+	bm.Init()
 	return model{
-		userpage: bridge.UserPage{Items: [2]string{"Quit", "Done!"}},
-		lights:   bridge.Lights{Cursor: 0},
-		groups:   bridge.Groups{Cursor: 0},
-		log:      &bridge.LogFile{},
-		panel:    bridge.BridgePanel,
+		userpage:   bridge.UserPage{Items: [2]string{"Quit", "Done!"}},
+		lights:     bridge.Lights{Cursor: 0},
+		groups:     bridge.Groups{Cursor: 0},
+		log:        &bridge.LogFile{},
+		brightness: bm,
+		panel:      bridge.BridgePanel,
 	}
 }
 
@@ -154,16 +158,31 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		bridge.Update_scene_status(m.scenes.AllItems, msg)
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "q", "ctrl+c":
+		case "q":
+			switch m.event {
+			case bridge.DisplayingBrightness, bridge.DisplayingColors:
+				// do nothing
+			default:
+				return m, tea.Quit
+			}
+		case "ctrl+c":
 			return m, tea.Quit
 		case "1":
-			m.panel = bridge.BridgePanel
+			if m.event == bridge.DisplayingLights {
+				m.panel = bridge.BridgePanel
+			}
 		case "2":
-			m.panel = bridge.GroupPanel
+			if m.event == bridge.DisplayingLights {
+				m.panel = bridge.GroupPanel
+			}
 		case "3":
-			m.panel = bridge.LightPanel
+			if m.event == bridge.DisplayingLights {
+				m.panel = bridge.LightPanel
+			}
 		case "4":
-			m.panel = bridge.ScenePanel
+			if m.event == bridge.DisplayingLights {
+				m.panel = bridge.ScenePanel
+			}
 		case "j", "down":
 			switch m.event {
 			case bridge.DisplayingLights:
@@ -230,9 +249,33 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.event = bridge.DisplayingColors
 				}
 			}
+		case "b":
+			if m.event == bridge.DisplayingBrightness {
+				m.brightness.Off()
+				m.event = bridge.DisplayingLights
+			}
+			switch m.panel {
+			// could potentially be reformatted for conciseness
+			case bridge.LightPanel:
+				if m.event == bridge.DisplayingLights {
+					light := m.lights.Items[m.lights.Cursor]
+					if light.Connected {
+						m.event = bridge.DisplayingBrightness
+						m.brightness.On()
+					}
+				}
+			case bridge.GroupPanel:
+				if m.event == bridge.DisplayingLights {
+					m.event = bridge.DisplayingBrightness
+					m.brightness.On()
+				}
+			}
+			return m, nil
 		case "esc":
 			switch m.event {
 			case bridge.DisplayingColors:
+				m.event = bridge.DisplayingLights
+			case bridge.DisplayingBrightness:
 				m.event = bridge.DisplayingLights
 			}
 		case "l", "right":
@@ -289,7 +332,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	}
-	return m, nil
+	var cmd tea.Cmd
+	*m.brightness.Input, cmd = m.brightness.Input.Update(msg)
+	return m, cmd
 }
 
 func (m model) View() string {
@@ -322,6 +367,11 @@ func (m model) View() string {
 			//
 		} else if m.event == bridge.DisplayingBrightness {
 			//
+			output = view.Render_bri_modal(output,
+				m.brightness.Input.View(),
+				m.brightness.Input.Err == nil,
+				m.win.width,
+				m.win.height)
 		}
 
 		return output

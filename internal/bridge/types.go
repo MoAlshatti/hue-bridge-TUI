@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/charmbracelet/bubbles/v2/textinput"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -164,6 +165,10 @@ func (s *Scenes) decrement() {
 // represents the user uesd for the API
 type User struct {
 	Username string `json:"Key"`
+}
+
+type BrightnessModal struct {
+	Input *textinput.Model
 }
 
 type ErrMsg struct {
