@@ -7,7 +7,8 @@ func render_bri_box(intputView string, valid bool, width, height int) string {
 		Border(betagloss.RoundedBorder()).
 		Foreground(white).
 		Height(get_brimodal_height(height)).
-		Width(get_brimodal_width(width))
+		Width(get_brimodal_width(width)).
+		AlignHorizontal(betagloss.Center)
 	textStyle := betagloss.NewStyle()
 	validStyle := textStyle.Foreground(betagloss.Red)
 
@@ -17,8 +18,8 @@ func render_bri_box(intputView string, valid bool, width, height int) string {
 	}
 
 	title := textStyle.Render("Enter a number between 0 and a 100!")
-	output := betagloss.JoinVertical(betagloss.Center, title, InvalidWarning, intputView)
-	return boxStyle.Render(output)
+	output := betagloss.JoinVertical(betagloss.Center, title, InvalidWarning)
+	return boxStyle.Render(betagloss.JoinVertical(betagloss.Left, output, intputView))
 }
 
 func Render_bri_modal(output, inputView string, valid bool, width, height int) string {

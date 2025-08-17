@@ -13,6 +13,7 @@ func (bm *BrightnessModal) Init() {
 	ti := textinput.New()
 	ti.CharLimit = 3
 	ti.Prompt = "❯ "
+	ti.VirtualCursor = true
 	ti.Styles.Cursor.BlinkSpeed = time.Millisecond * 500
 	ti.Validate = func(s string) error {
 		num, err := strconv.Atoi(s)
@@ -25,6 +26,18 @@ func (bm *BrightnessModal) Init() {
 		return nil
 	}
 	bm.Input = &ti
+}
+
+func (bm *BrightnessModal) Parse() (float64, error) {
+
+	if bm.Input.Err != nil {
+		return 0, bm.Input.Err
+	}
+	bri, err := strconv.Atoi(bm.Input.Value())
+	if err != nil {
+		return 0, err
+	}
+	return float64(bri), nil
 }
 
 func (bm *BrightnessModal) On() {

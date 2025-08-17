@@ -253,6 +253,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.event == bridge.DisplayingBrightness {
 				m.brightness.Off()
 				m.event = bridge.DisplayingLights
+				return m, nil
 			}
 			switch m.panel {
 			// could potentially be reformatted for conciseness
@@ -326,7 +327,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				}
 			case bridge.DisplayingBrightness:
-				//
+				// send the command then reset the textinput value
+				if m.brightness.Input.Err == nil {
+					bri, err := m.brightness.Parse()
+					if err == nil {
+						m.brightness.Off()
+						m.event = bridge.DisplayingLights
+						switch m.panel {
+						case bridge.LightPanel:
+							light := m.lights.Items[m.lights.Cursor]
+							return m, bridge.Change_light_brightness(m.bridge, *light, bri, m.user.Username)
+						case bridge.GroupPanel:
+							group := m.groups.Items[m.groups.Cursor]
+							return m, bridge.Change_group_brightness(m.bridge, group, bri, m.user.Username)
+						}
+					}
+				}
 			case bridge.DisplayingColors:
 				//
 			}
@@ -361,7 +377,6 @@ func (m model) View() string {
 
 		output := lipgloss.JoinHorizontal(lipgloss.Right, leftSide, rightSide)
 
-		// deal with brighntess and color canvases here
 		if m.event == bridge.DisplayingColors {
 			output = view.Render_color_modal(output, m.win.width, m.win.height)
 			//
@@ -373,7 +388,6 @@ func (m model) View() string {
 				m.win.width,
 				m.win.height)
 		}
-
 		return output
 	}
 	return lipgloss.Place(m.win.width, m.win.height, lipgloss.Center, lipgloss.Center, view.Render_loading_text(m.event))
