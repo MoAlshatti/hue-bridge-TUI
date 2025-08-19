@@ -253,6 +253,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.event == bridge.DisplayingBrightness {
 				m.brightness.Off()
 				m.event = bridge.DisplayingLights
+				m.brightness.Input.Err = nil
 				return m, nil
 			}
 			switch m.panel {
@@ -266,7 +267,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				}
 			case bridge.GroupPanel:
-				if m.event == bridge.DisplayingLights {
+				if m.event == bridge.DisplayingLights && m.groups.Cursor > 0 {
 					m.event = bridge.DisplayingBrightness
 					m.brightness.On()
 				}
@@ -275,9 +276,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "esc":
 			switch m.event {
 			case bridge.DisplayingColors:
+				//
 				m.event = bridge.DisplayingLights
+				return m, nil
 			case bridge.DisplayingBrightness:
+				m.brightness.Off()
+				m.brightness.Input.Err = nil
 				m.event = bridge.DisplayingLights
+				return m, nil
 			}
 		case "l", "right":
 			switch m.event {
@@ -381,7 +387,6 @@ func (m model) View() string {
 			output = view.Render_color_modal(output, m.win.width, m.win.height)
 			//
 		} else if m.event == bridge.DisplayingBrightness {
-			//
 			output = view.Render_bri_modal(output,
 				m.brightness.Input.View(),
 				m.brightness.Input.Err == nil,

@@ -99,12 +99,12 @@ func Initiate_sse(b Bridge, appkey string, p *tea.Program) tea.Cmd {
 }
 
 func find_sse_update(obj map[string]any) (s SseUpdate) {
-	switch id := obj["id"].(type) {
-	case string:
+	id, ok := obj["id"].(string)
+	if ok {
 		s.Id = id
 	}
-	switch objType := obj["type"].(type) {
-	case string:
+	objType, ok := obj["type"].(string)
+	if ok {
 		s.Type = objType
 	}
 	return s

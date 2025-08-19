@@ -29,7 +29,7 @@ func Render_bri_modal(output, inputView string, valid bool, width, height int) s
 	l1H := layer1.GetHeight()
 	l1W := layer1.GetWidth()
 
-	layer2 = layer2.X(l1W / 3).Y(l1H / 4).Z(1)
+	layer2 = layer2.X(l1W / 3).Y(l1H / 3).Z(1)
 
 	canv := betagloss.NewCanvas(layer1, layer2)
 
