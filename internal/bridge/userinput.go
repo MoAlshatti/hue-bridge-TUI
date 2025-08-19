@@ -2,10 +2,17 @@ package bridge
 
 import (
 	"errors"
+	"fmt"
+	"image/color"
+	"io"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/charmbracelet/bubbles/v2/list"
 	"github.com/charmbracelet/bubbles/v2/textinput"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 // controlling color and brightness input
@@ -47,4 +54,36 @@ func (bm *BrightnessModal) On() {
 func (bm *BrightnessModal) Off() {
 	bm.Input.Blur()
 	bm.Input.Reset()
+}
+
+//The List component
+
+func (i Color) FilterValue() string { return i.Name }
+
+type itemDelegate struct{}
+
+func (d itemDelegate) Height() int                             { return 1 }
+func (d itemDelegate) Spacing() int                            { return 0 }
+func (d itemDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd { return nil }
+func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
+	i, ok := listItem.(Color)
+	if !ok {
+		return
+	}
+
+	// join the color with the name later
+
+	str := fmt.Sprintf("%d. %s", index+1, i.Name)
+
+	itemStyle := lipgloss.NewStyle().PaddingLeft(4).Width(m.Width() / 3)
+	selectedItemStyle := itemStyle.Foreground(lipgloss.Color("#000080")).Background(color.White)
+
+	fn := itemStyle.Render
+	if index == m.Index() {
+		fn = func(s ...string) string {
+			return selectedItemStyle.Render(strings.Join(s, " "))
+		}
+	}
+
+	fmt.Fprint(w, fn(str))
 }

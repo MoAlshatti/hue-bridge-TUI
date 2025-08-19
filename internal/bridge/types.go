@@ -5,8 +5,10 @@ import (
 	"log"
 	"time"
 
+	"github.com/charmbracelet/bubbles/v2/list"
 	"github.com/charmbracelet/bubbles/v2/textinput"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/lucasb-eyer/go-colorful"
 )
 
 type Event int
@@ -169,6 +171,18 @@ type User struct {
 
 type BrightnessModal struct {
 	Input *textinput.Model
+}
+
+type Color struct {
+	Name string
+	Val  colorful.Color
+}
+
+type ColorModal struct {
+	AllItems []Color
+	Items    []*Color
+	List     list.Model
+	Cursor   int
 }
 
 type ErrMsg struct {
