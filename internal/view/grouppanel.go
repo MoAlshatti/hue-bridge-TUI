@@ -121,3 +121,14 @@ func Render_group_details(group bridge.Group, width, height int) string {
 	}
 	return output
 }
+
+// couldnt find a better spot for it
+func Init_group_items(groups []bridge.Group) []bridge.Group {
+	var g []bridge.Group
+	g = append(g, bridge.Group{ID: "None", Metadata: struct {
+		Name      string
+		Archetype string
+	}{Name: "None"}})
+	g = append(g, []bridge.Group(groups)...)
+	return g
+}

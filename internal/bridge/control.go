@@ -392,7 +392,6 @@ func Change_light_color(b Bridge, light Light, color Color, appkey string) tea.C
 		ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
 		defer cancel()
 		x, y, _ := color.Val.Xyy()
-		log.Println(x, y)
 
 		type Col struct {
 			Xy XyColor `json:"xy"`
@@ -400,7 +399,6 @@ func Change_light_color(b Bridge, light Light, color Color, appkey string) tea.C
 		body := struct {
 			Color Col `json:"color"`
 		}{Color: Col{Xy: XyColor{X: x, Y: y}}}
-		log.Println(body)
 		var buff bytes.Buffer
 		json.NewEncoder(&buff).Encode(&body)
 

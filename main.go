@@ -122,11 +122,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	case bridge.GroupsMsg:
 		m.log.Log_Print("Groups Fetched!")
-		m.groups.Items = append(m.groups.Items, bridge.Group{ID: "None", Metadata: struct {
-			Name      string
-			Archetype string
-		}{Name: "None"}})
-		m.groups.Items = append(m.groups.Items, []bridge.Group(msg)...)
+		m.groups.Items = view.Init_group_items([]bridge.Group(msg))
 		m.event = bridge.FetchingLights
 		return m, tea.Batch(bridge.Fetch_lights(m.bridge, m.user.Username, m.log),
 			bridge.Fetch_Scenes(m.bridge, m.user.Username, m.log))
@@ -200,12 +196,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else if m.panel == bridge.ScenePanel {
 					bridge.Increment_cursor(&m.scenes)
 				}
-			case bridge.DisplayingBrightness:
-				//
-			case bridge.DisplayingColors:
-				//
 			}
-
 		case "k", "up":
 			switch m.event {
 			case bridge.DisplayingLights:
@@ -218,10 +209,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else if m.panel == bridge.ScenePanel {
 					bridge.Decrement_cusror(&m.scenes)
 				}
-			case bridge.DisplayingBrightness:
-				//
-			case bridge.DisplayingColors:
-				//
 			}
 		case "h", "left":
 			switch m.event {
@@ -232,20 +219,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				case bridge.LightPanel:
 					light := *m.lights.Items[m.lights.Cursor]
 					if light.Dimming.Brightness > 0 && light.On && light.Connected {
-						bri := max(light.Dimming.Brightness-15, 0.0)
+						bri := max(light.Dimming.Brightness-20, 0.0)
 						return m, bridge.Change_light_brightness(m.bridge, light, bri, m.user.Username)
 					}
 				case bridge.GroupPanel:
 					group := m.groups.Items[m.groups.Cursor]
 					if group.Brightness > 0 && group.On {
-						bri := max(group.Brightness-15, 0.0)
+						bri := max(group.Brightness-20, 0.0)
 						return m, bridge.Change_group_brightness(m.bridge, group, bri, m.user.Username)
 					}
 				}
-			case bridge.DisplayingBrightness:
-				//
-			case bridge.DisplayingColors:
-				//
 			}
 		case "c":
 			if m.panel == bridge.LightPanel && m.event == bridge.DisplayingLights {
@@ -271,26 +254,27 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					if light.Connected {
 						m.event = bridge.DisplayingBrightness
 						m.brightness.On()
+						return m, nil
 					}
 				}
 			case bridge.GroupPanel:
 				if m.event == bridge.DisplayingLights && m.groups.Cursor > 0 {
 					m.event = bridge.DisplayingBrightness
 					m.brightness.On()
+					return m, nil
 				}
 			}
-			return m, nil
 		case "esc":
 			switch m.event {
 			case bridge.DisplayingColors:
-				//
 				if m.color.List.SettingFilter() {
 					m.color.List.SetFilterState(list.Unfiltered)
 					m.color.List.ResetFilter()
-					m.color.List.FilterInput.Blur()
+					m.color.List.FilterInput.Reset()
 					m.color.List.ResetSelected()
 					return m, nil
 				}
+				m.color.List.ResetSelected()
 				m.event = bridge.DisplayingLights
 				return m, nil
 			case bridge.DisplayingBrightness:
@@ -308,13 +292,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				case bridge.LightPanel:
 					light := *m.lights.Items[m.lights.Cursor]
 					if light.Dimming.Brightness < 100 && light.On && light.Connected {
-						bri := min(light.Dimming.Brightness+15, 100.0)
+						bri := min(light.Dimming.Brightness+20, 100.0)
 						return m, bridge.Change_light_brightness(m.bridge, light, bri, m.user.Username)
 					}
 				case bridge.GroupPanel:
 					group := m.groups.Items[m.groups.Cursor]
 					if group.Brightness < 100 && group.On {
-						bri := min(group.Brightness+15, 100.0)
+						bri := min(group.Brightness+20, 100.0)
 						return m, bridge.Change_group_brightness(m.bridge, group, bri, m.user.Username)
 					}
 				}
@@ -347,7 +331,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				}
 			case bridge.DisplayingBrightness:
-				// send the command then reset the textinput value
 				if m.brightness.Input.Err == nil {
 					bri, err := m.brightness.Parse()
 					if err == nil {
@@ -367,12 +350,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				color, ok := m.color.List.SelectedItem().(bridge.Color)
 				if ok && !m.color.List.SettingFilter() {
 					light := *m.lights.Items[m.lights.Cursor]
-					m.color.List.FilterInput.Blur()
 					m.color.List.ResetFilter()
 					m.color.List.ResetSelected()
 					m.event = bridge.DisplayingLights
+					m.color.List.FilterInput.Reset()
 					return m, bridge.Change_light_color(m.bridge, light, color, m.user.Username)
 				}
+
 			}
 		}
 	}
@@ -392,16 +376,12 @@ func (m model) View() string {
 		userpage := view.Render_userpage(m.userpage)
 		return lipgloss.Place(m.win.width, m.win.height, lipgloss.Center, lipgloss.Center, userpage)
 	case bridge.DisplayingLights, bridge.DisplayingBrightness, bridge.DisplayingColors:
+
 		bridgepanel := view.Render_bridge(m.bridge, m.panel, m.win.width, m.win.height)
-
 		grouppanel := view.Render_group(m.groups, m.panel, m.win.width, m.win.height)
-
 		lightpanel := view.Render_lights(m.lights, m.groups, m.panel, m.win.width, m.win.height)
-
 		scenePanel := view.Render_scenes(m.scenes, m.panel, m.win.width, m.win.height)
-
 		detailsPanel := view.Render_details(m.bridge, m.groups, m.lights, m.scenes, m.panel, m.win.width, m.win.height)
-
 		logcontent := view.Render_log_title(m.log.Content, m.win.width, m.win.height)
 		logPanel := view.Render_log_panel(logcontent, m.win.width, m.win.height)
 

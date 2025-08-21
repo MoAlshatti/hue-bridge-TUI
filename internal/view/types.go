@@ -34,7 +34,7 @@ func Get_colormodal_width(width int) int {
 	return width / 4
 }
 func get_brimodal_width(width int) int {
-	return Get_colormodal_width(width)
+	return width / 3
 }
 
 func get_bridgepanel_height(height int) int {
