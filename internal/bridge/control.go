@@ -385,6 +385,44 @@ func Change_light_brightness(b Bridge, light Light, bri float64, appkey string) 
 	}
 }
 
+func Change_light_color(b Bridge, light Light, color Color, appkey string) tea.Cmd {
+	return func() tea.Msg {
+
+		url := fmt.Sprintf("https://%s/clip/v2/resource/light/%s", b.Ip_addr, light.ID)
+		ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+		defer cancel()
+		x, y, _ := color.Val.Xyy()
+		log.Println(x, y)
+
+		type Col struct {
+			Xy XyColor `json:"xy"`
+		}
+		body := struct {
+			Color Col `json:"color"`
+		}{Color: Col{Xy: XyColor{X: x, Y: y}}}
+		log.Println(body)
+		var buff bytes.Buffer
+		json.NewEncoder(&buff).Encode(&body)
+
+		req, err := http.NewRequestWithContext(ctx, http.MethodPut, url, &buff)
+		if err != nil {
+			return ResourceErrMsg(ErrMsg{err})
+		}
+		set_header(req, appkey)
+		resp, err := client.Do(req)
+		if err != nil {
+			return ResourceErrMsg(ErrMsg{err})
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode == http.StatusOK {
+			return ResourceSuccessMsg(fmt.Sprint(light.Metadata.Name, "color changed!"))
+		}
+		return ResourceErrMsg(ErrMsg{errors.New(resp.Status + ": " + light.Metadata.Name + " Failed to change Color!")})
+	}
+
+}
+
 func Pick_scene(b Bridge, scene Scene, appkey string) tea.Cmd {
 	return func() tea.Msg {
 

@@ -30,11 +30,11 @@ func get_detailspanel_width(width int) int {
 func get_logpanel_width(width int) int {
 	return get_detailspanel_width(width)
 }
-func get_colormodal_width(width int) int {
-	return width / 3
+func Get_colormodal_width(width int) int {
+	return width / 4
 }
 func get_brimodal_width(width int) int {
-	return get_colormodal_width(width)
+	return Get_colormodal_width(width)
 }
 
 func get_bridgepanel_height(height int) int {
@@ -55,7 +55,7 @@ func get_detailspanel_height(height int) int {
 func get_logpanel_height(height int) int {
 	return get_scenepanel_height(height)
 }
-func get_colormodal_height(height int) int {
+func Get_colormodal_height(height int) int {
 	return int(0.4 * float64(height))
 }
 func get_brimodal_height(height int) int {

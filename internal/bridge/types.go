@@ -178,11 +178,10 @@ type Color struct {
 	Val  colorful.Color
 }
 
+func (c Color) FilterValue() string { return c.Name }
+
 type ColorModal struct {
-	AllItems []Color
-	Items    []*Color
-	List     list.Model
-	Cursor   int
+	List list.Model
 }
 
 type ErrMsg struct {

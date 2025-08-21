@@ -58,8 +58,6 @@ func (bm *BrightnessModal) Off() {
 
 //The List component
 
-func (i Color) FilterValue() string { return i.Name }
-
 type itemDelegate struct{}
 
 func (d itemDelegate) Height() int                             { return 1 }
@@ -72,11 +70,20 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 	}
 
 	// join the color with the name later
+	col := listItem.(Color)
 
 	str := fmt.Sprintf("%d. %s", index+1, i.Name)
+	colString := "   "
 
-	itemStyle := lipgloss.NewStyle().PaddingLeft(4).Width(m.Width() / 3)
+	itemStyle := lipgloss.NewStyle().PaddingLeft(4).Width((m.Width() / 3))
 	selectedItemStyle := itemStyle.Foreground(lipgloss.Color("#000080")).Background(color.White)
+	colorStyle := lipgloss.NewStyle().
+		Border(lipgloss.HiddenBorder()).
+		Width(len(colString)).
+		Background(lipgloss.Color(col.Val.Clamped().Hex())).Align(lipgloss.Right)
+
+	//remove later
+	_ = colorStyle.String()
 
 	fn := itemStyle.Render
 	if index == m.Index() {
@@ -86,4 +93,16 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 	}
 
 	fmt.Fprint(w, fn(str))
+}
+
+func Initialize_list() list.Model {
+	newlist := list.New([]list.Item{
+		White, NeutralWhite, WarmWhite,
+		Yellow, Amber, Orange,
+		Red, DeepRed, RosePink, Magenta,
+		Green, LimeGreen, DarkGreen,
+		Cyan, SkyBlue, RoyalBlue, Navy, Aqua,
+		Violet, Indigo, Lavender, Lilac,
+	}, itemDelegate{}, 20, 20)
+	return newlist
 }

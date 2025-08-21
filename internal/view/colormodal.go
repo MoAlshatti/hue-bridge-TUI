@@ -1,25 +1,15 @@
 package view
 
 import (
+	"github.com/charmbracelet/bubbles/v2/list"
 	betagloss "github.com/charmbracelet/lipgloss/v2"
 )
 
-func Render_color_box(elems []string, cursor, width, height int) string {
-	style := betagloss.NewStyle().
-		Border(betagloss.RoundedBorder()).
-		Height(get_colormodal_height(height)).
-		Width(get_colormodal_width(width))
+func Render_color_modal(output, listView string, width, height int) string {
 
-	items := betagloss.JoinVertical(betagloss.Left, elems...)
-
-	return style.Render(items)
-}
-
-func Render_color_modal(output string, width, height int) string {
+	boxStyle := betagloss.NewStyle().Border(betagloss.RoundedBorder())
 	layer1 := betagloss.NewLayer(output).X(0).Y(0)
-	style := betagloss.NewStyle().Width(get_colormodal_width(width))
-	elems := []string{style.Render("elem 1"), style.Render("elem 2"), style.Render("elem 3"), style.Render("elem 4")}
-	layer2 := betagloss.NewLayer(Render_color_box(elems, 0, width, height))
+	layer2 := betagloss.NewLayer(boxStyle.Render(listView))
 
 	l1H := layer1.GetHeight()
 	l1W := layer1.GetWidth()
@@ -30,4 +20,24 @@ func Render_color_modal(output string, width, height int) string {
 
 	return canv.Render()
 
+}
+
+func Apply_list_style(l *list.Model) {
+
+	titleStyle := betagloss.NewStyle().MarginLeft(2).Bold(true)
+	paginationStyle := list.DefaultStyles(true).PaginationStyle.PaddingLeft(4)
+
+	l.Title = "Select a color from the list!"
+	l.SetShowStatusBar(false)
+	l.SetShowHelp(false)
+	l.SetFilteringEnabled(true)
+
+	l.Styles.Title = titleStyle
+	l.Styles.PaginationStyle = paginationStyle
+
+}
+func Update_list_size(l *list.Model, width, height int) {
+	l.SetHeight(Get_colormodal_height(height))
+	l.SetWidth(width)
+	l.FilterInput.SetWidth(Get_colormodal_width(width))
 }

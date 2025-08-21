@@ -1,7 +1,6 @@
 package bridge
 
 import (
-	"log"
 	"slices"
 )
 
@@ -54,7 +53,6 @@ func Sort_Connectivity(l *Lights, connDevices []Connectivity) {
 	for _, v := range connDevices {
 		for i := range l.AllItems {
 			if v.ID == l.AllItems[i].owner.Rid {
-				log.Println("ID MATCH!")
 				switch v.Status {
 				case "connectivity_issue", "disconnected":
 					l.AllItems[i].Connected = false

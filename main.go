@@ -5,6 +5,7 @@ import (
 
 	"github.com/MoAlshatti/hue-bridge-TUI/internal/bridge"
 	"github.com/MoAlshatti/hue-bridge-TUI/internal/view"
+	"github.com/charmbracelet/bubbles/v2/list"
 	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -40,6 +41,7 @@ type model struct {
 	groups     bridge.Groups
 	scenes     bridge.Scenes
 	brightness bridge.BrightnessModal
+	color      bridge.ColorModal
 	lights     bridge.Lights
 	panel      bridge.Panel
 	event      bridge.Event
@@ -48,12 +50,15 @@ type model struct {
 func initalModel() model {
 	bm := bridge.BrightnessModal{}
 	bm.Init()
+	cm := bridge.ColorModal{List: bridge.Initialize_list()}
+	view.Apply_list_style(&cm.List)
 	return model{
 		userpage:   bridge.UserPage{Items: [2]string{"Quit", "Done!"}},
 		lights:     bridge.Lights{Cursor: 0},
 		groups:     bridge.Groups{Cursor: 0},
 		log:        &bridge.LogFile{},
 		brightness: bm,
+		color:      cm,
 		panel:      bridge.BridgePanel,
 	}
 }
@@ -67,6 +72,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.win.width = msg.Width
 		m.win.height = msg.Height
+		view.Update_list_size(&m.color.List, msg.Width, msg.Height)
 	case bridge.BridgeFoundMsg:
 		m.bridge = bridge.Bridge(msg)
 		m.event = bridge.FindingUser
@@ -136,7 +142,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case bridge.ResourceSuccessMsg:
 		m.log.Log_Print(string(msg))
 	case bridge.ConnectivityMsg:
-		log.Println("conns: ", msg)
 		bridge.Sort_Connectivity(&m.lights, msg)
 	case bridge.StateUpdate:
 		switch msg.Type {
@@ -245,8 +250,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "c":
 			if m.panel == bridge.LightPanel && m.event == bridge.DisplayingLights {
 				light := m.lights.Items[m.lights.Cursor]
-				if light.Connected {
+				if light.Connected && (light.Color.X != 0 && light.Color.Y != 0) {
 					m.event = bridge.DisplayingColors
+					m.color.List.FilterInput.Focus()
+					return m, nil
 				}
 			}
 		case "b":
@@ -277,6 +284,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch m.event {
 			case bridge.DisplayingColors:
 				//
+				if m.color.List.SettingFilter() {
+					m.color.List.SetFilterState(list.Unfiltered)
+					m.color.List.ResetFilter()
+					m.color.List.FilterInput.Blur()
+					m.color.List.ResetSelected()
+					return m, nil
+				}
 				m.event = bridge.DisplayingLights
 				return m, nil
 			case bridge.DisplayingBrightness:
@@ -350,13 +364,26 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				}
 			case bridge.DisplayingColors:
-				//
+				color, ok := m.color.List.SelectedItem().(bridge.Color)
+				if ok && !m.color.List.SettingFilter() {
+					light := *m.lights.Items[m.lights.Cursor]
+					m.color.List.FilterInput.Blur()
+					m.color.List.ResetFilter()
+					m.color.List.ResetSelected()
+					m.event = bridge.DisplayingLights
+					return m, bridge.Change_light_color(m.bridge, light, color, m.user.Username)
+				}
 			}
 		}
 	}
-	var cmd tea.Cmd
-	*m.brightness.Input, cmd = m.brightness.Input.Update(msg)
-	return m, cmd
+	cmds := make([]tea.Cmd, 2)
+	switch m.event {
+	case bridge.DisplayingColors:
+		m.color.List, cmds[1] = m.color.List.Update(msg)
+	case bridge.DisplayingBrightness:
+		*m.brightness.Input, cmds[0] = m.brightness.Input.Update(msg)
+	}
+	return m, tea.Batch(cmds...)
 }
 
 func (m model) View() string {
@@ -384,8 +411,7 @@ func (m model) View() string {
 		output := lipgloss.JoinHorizontal(lipgloss.Right, leftSide, rightSide)
 
 		if m.event == bridge.DisplayingColors {
-			output = view.Render_color_modal(output, m.win.width, m.win.height)
-			//
+			output = view.Render_color_modal(output, m.color.List.View(), m.win.width, m.win.height)
 		} else if m.event == bridge.DisplayingBrightness {
 			output = view.Render_bri_modal(output,
 				m.brightness.Input.View(),
