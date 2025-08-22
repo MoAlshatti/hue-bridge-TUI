@@ -91,3 +91,15 @@ func Set_groups_status(l Lights, g *Groups) {
 		}
 	}
 }
+
+func Is_group_active(g []Group, id string) bool {
+	for _, v := range g {
+		if v.ID == id {
+			if v.Active {
+				return true
+			}
+			return false
+		}
+	}
+	return false
+}
