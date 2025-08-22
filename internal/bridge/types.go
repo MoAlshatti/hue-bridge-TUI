@@ -84,6 +84,7 @@ type Group struct { // consider making it lowercase if you aint finna use it in 
 	}
 	GroupID    string
 	On         bool
+	Active     bool
 	Brightness float64
 	MinDim     float64
 	Type       string

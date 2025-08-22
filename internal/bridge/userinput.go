@@ -97,7 +97,7 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 
 func Initialize_list() list.Model {
 	newlist := list.New([]list.Item{
-		White, NeutralWhite, WarmWhite,
+		NeutralWhite, White, WarmWhite,
 		Yellow, Amber, Orange,
 		Red, DeepRed, RosePink, Magenta,
 		Green, LimeGreen, DarkGreen,

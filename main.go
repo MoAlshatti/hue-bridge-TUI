@@ -115,6 +115,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.lights.AllItems = []bridge.Light(msg)
 		// populate Items based on the chosen room
 		bridge.Filter_lights(&m.lights, m.groups)
+		bridge.Set_groups_status(m.lights, &m.groups)
 		m.event = bridge.DisplayingLights
 		return m, bridge.Fetch_connectivity(m.bridge, m.user.Username)
 	case bridge.FailedToFetchGroupsMsg:
@@ -197,6 +198,27 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					bridge.Increment_cursor(&m.scenes)
 				}
 			}
+		case "l", "right":
+			switch m.event {
+			case bridge.RequestPressButton:
+				bridge.Decrement_cusror(&m.userpage)
+			case bridge.DisplayingLights:
+				switch m.panel {
+				case bridge.LightPanel:
+					light := *m.lights.Items[m.lights.Cursor]
+					if light.Dimming.Brightness < 100 && light.On && light.Connected {
+						bri := min(light.Dimming.Brightness+20, 100.0)
+						return m, bridge.Change_light_brightness(m.bridge, light, bri, m.user.Username)
+					}
+				case bridge.GroupPanel:
+					group := m.groups.Items[m.groups.Cursor]
+					if group.Brightness < 100 && group.On && group.Active {
+						bri := min(group.Brightness+20, 100.0)
+						return m, bridge.Change_group_brightness(m.bridge, group, bri, m.user.Username)
+					}
+				}
+			}
+
 		case "k", "up":
 			switch m.event {
 			case bridge.DisplayingLights:
@@ -224,7 +246,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				case bridge.GroupPanel:
 					group := m.groups.Items[m.groups.Cursor]
-					if group.Brightness > 0 && group.On {
+					if group.Brightness > 0 && group.On && group.Active {
 						bri := max(group.Brightness-20, 0.0)
 						return m, bridge.Change_group_brightness(m.bridge, group, bri, m.user.Username)
 					}
@@ -258,7 +280,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				}
 			case bridge.GroupPanel:
-				if m.event == bridge.DisplayingLights && m.groups.Cursor > 0 {
+				group := m.groups.Items[m.groups.Cursor]
+				if m.event == bridge.DisplayingLights && m.groups.Cursor > 0 && group.Active {
 					m.event = bridge.DisplayingBrightness
 					m.brightness.On()
 					return m, nil
@@ -282,26 +305,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.brightness.Input.Err = nil
 				m.event = bridge.DisplayingLights
 				return m, nil
-			}
-		case "l", "right":
-			switch m.event {
-			case bridge.RequestPressButton:
-				bridge.Decrement_cusror(&m.userpage)
-			case bridge.DisplayingLights:
-				switch m.panel {
-				case bridge.LightPanel:
-					light := *m.lights.Items[m.lights.Cursor]
-					if light.Dimming.Brightness < 100 && light.On && light.Connected {
-						bri := min(light.Dimming.Brightness+20, 100.0)
-						return m, bridge.Change_light_brightness(m.bridge, light, bri, m.user.Username)
-					}
-				case bridge.GroupPanel:
-					group := m.groups.Items[m.groups.Cursor]
-					if group.Brightness < 100 && group.On {
-						bri := min(group.Brightness+20, 100.0)
-						return m, bridge.Change_group_brightness(m.bridge, group, bri, m.user.Username)
-					}
-				}
 			}
 		case "enter":
 			switch m.event {

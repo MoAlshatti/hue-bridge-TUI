@@ -71,3 +71,23 @@ func Sort_Connectivity(l *Lights, connDevices []Connectivity) {
 		return 0
 	})
 }
+
+// This function sets the group as active if at least one light in it is connected
+// and if all lights are disconnected then the group is set as inactive
+func Set_groups_status(l Lights, g *Groups) {
+
+	for i := range g.Items {
+		g.Items[i].Active = false
+	Loop:
+		for _, child := range g.Items[i].Children {
+			for _, light := range l.AllItems {
+				if child.Rid == light.owner.Rid {
+					if light.Connected {
+						g.Items[i].Active = true
+						break Loop
+					}
+				}
+			}
+		}
+	}
+}
