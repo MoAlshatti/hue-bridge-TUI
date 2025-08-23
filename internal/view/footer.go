@@ -9,53 +9,44 @@ func Apply_footer(e bridge.Event, p bridge.Panel, width int) string {
 
 	style := lipgloss.NewStyle().MarginLeft(1).Foreground(lipgloss.Color("#2F74C0"))
 
-	var (
-		up, down, left, right                      = "up: ↑/k", "down: ↓/j", "←/h", "→/l"
-		enter, esc                                 = "<enter>", "<esc>"
-		keybinds                                   = "Keybinds: ?" // not implemented yet
-		sep                                        = " | "
-		bridgePan, groupsPan, lightsPan, scenesPan = "Bridge: [1]", "Groups: [2]", "Lights: [3]", "Scenes: [4]"
-		bri                                        = "Change bright: b"
-		decrease_bri, increase_bri                 = left + ": decrease bright", right + ": increase bright"
-		off                                        = "on/off: " + enter
-		cancel                                     = "cancel: " + esc + "/b"
-		apply                                      = "apply: " + enter
-		color                                      = "change color: c"
-		nextPage, prevPage                         = "PgNext: " + right, "PgPrev: " + left
-		filter                                     = "Filter: /"
-	)
-
 	var strs []string
 	s := ""
 	switch p {
 	case bridge.BridgePanel:
-		strs = append(strs, groupsPan, lightsPan, scenesPan, keybinds)
+		strs = append(strs, render_keybinds(bridge.GroupsPan, bridge.LightsPan, bridge.ScenesPan, bridge.Help)...)
 	case bridge.GroupPanel:
 		switch e {
 		case bridge.DisplayingLights:
-			strs = append(strs, up, down, bridgePan, lightsPan, scenesPan, off, bri, keybinds, decrease_bri, increase_bri)
+			strs = append(strs, render_keybinds(bridge.Up, bridge.Down,
+				bridge.BridgePan, bridge.LightsPan, bridge.ScenesPan,
+				bridge.Off, bridge.Bri, bridge.Help,
+				bridge.Decrease_bri, bridge.Increase_bri)...)
 		case bridge.DisplayingBrightness:
-			strs = append(strs, cancel, apply)
+			strs = append(strs, render_keybinds(bridge.Cancel, bridge.Apply)...)
 		}
 	case bridge.LightPanel:
 		switch e {
 		case bridge.DisplayingLights:
-			strs = append(strs, up,
-				down, bridgePan, groupsPan, scenesPan,
-				off, bri, color, keybinds, decrease_bri, increase_bri)
+			strs = append(strs, render_keybinds(bridge.Up, bridge.Down,
+				bridge.BridgePan, bridge.GroupsPan, bridge.ScenesPan,
+				bridge.Off, bridge.Bri, bridge.Col, bridge.Help,
+				bridge.Decrease_bri, bridge.Increase_bri)...)
 		case bridge.DisplayingBrightness:
-			strs = append(strs, cancel, apply)
+			strs = append(strs, render_keybinds(bridge.Cancel, bridge.Apply)...)
 		case bridge.DisplayingColors:
-			//
-			strs = append(strs, cancel, prevPage, nextPage, apply, filter)
+			strs = append(strs, render_keybinds(bridge.Cancel,
+				bridge.PrevPage, bridge.NextPage,
+				bridge.Apply, bridge.Filter)...)
 		}
 	case bridge.ScenePanel:
-		// there is only one case
+		strs = append(strs, render_keybinds(bridge.Up, bridge.Down,
+			bridge.BridgePan, bridge.GroupsPan, bridge.LightsPan,
+			bridge.Off, bridge.Help)...)
 	}
 
 	for i := 0; len(s) <= width && i < len(strs); i++ {
 		s += strs[i]
-		s += sep
+		s += bridge.Sep
 	}
 	if len(s) == 0 {
 		return style.Render(s)
@@ -64,4 +55,14 @@ func Apply_footer(e bridge.Event, p bridge.Panel, width int) string {
 		return style.Render(s[:width-3] + "..")
 	}
 	return style.Render(s[:len(s)-2])
+}
+func render_keybind(k bridge.Keybind) string {
+	return k.Name + ": " + k.Key
+}
+func render_keybinds(ks ...bridge.Keybind) []string {
+	var strs []string
+	for _, v := range ks {
+		strs = append(strs, render_keybind(v))
+	}
+	return strs
 }
