@@ -393,6 +393,9 @@ func (m model) View() string {
 
 		output := lipgloss.JoinHorizontal(lipgloss.Right, leftSide, rightSide)
 
+		footer := view.Apply_footer(m.event, m.panel, m.win.width)
+		output = lipgloss.JoinVertical(lipgloss.Left, output, footer)
+
 		if m.event == bridge.DisplayingColors {
 			output = view.Render_color_modal(output, m.color.List.View(), m.win.width, m.win.height)
 		} else if m.event == bridge.DisplayingBrightness {

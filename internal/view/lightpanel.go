@@ -13,11 +13,15 @@ func Render_light_title(title string, bri float64, on, connected, selected bool,
 
 	status := ""
 	if !connected {
-		status = "Uncreachable "
+		status = " Offline "
 	} else if !on {
 		status = "OFF "
 	} else {
 		status = fmt.Sprint(int(bri), "% ")
+	}
+	max_len := 18
+	if len(title) > max_len {
+		title = title[:15] + "..."
 	}
 
 	style := lipgloss.NewStyle().Width((get_lightpanel_width(width)) - len(status))

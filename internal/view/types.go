@@ -44,7 +44,7 @@ func get_lightpanel_height(height int) int {
 	return int(0.25 * float64(height))
 }
 func get_grouppanel_height(height int) int {
-	return int(0.25 * float64(height))
+	return int(0.24 * float64(height))
 }
 func get_scenepanel_height(height int) int {
 	return int(0.25 * float64(height))

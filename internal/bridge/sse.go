@@ -125,12 +125,16 @@ func fetch_sse_update(obj map[string]any, sseupdate SseUpdate) any {
 		return ColorUpdate{sseupdate, XyColor{x.(float64), y.(float64)}}
 
 	} else if v, ok := obj["status"]; ok {
-		active := v.(map[string]any)["active"]
-		lastrecall := v.(map[string]any)["last_recall"]
-		switch lastrecall.(type) {
-		case time.Time:
-			return SceneStateUpdate{sseupdate, sceneStatus{active.(string), lastrecall.(time.Time)}}
-		default:
+		active, ok := v.(map[string]any)["active"]
+		if !ok {
+			// check if its some zigbee shit
+		}
+		lastrecall, ok := v.(map[string]any)["last_recall"].(time.Time)
+		if ok {
+
+			return SceneStateUpdate{sseupdate, sceneStatus{active.(string), lastrecall}}
+		} else {
+
 			return SceneStateUpdate{sseupdate, sceneStatus{active.(string), time.Time{}}}
 		}
 	}
