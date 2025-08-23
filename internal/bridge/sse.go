@@ -40,6 +40,19 @@ type SceneStateUpdate struct {
 	SseUpdate
 	Status sceneStatus
 }
+type SceneActiveUpdate struct {
+	SseUpdate
+	Active string `json:"active"`
+}
+type SceneRecallUpdate struct {
+	SseUpdate
+	LastRecall time.Time `json:"last_recall"`
+}
+type ZigbeeUpdate struct {
+	SseUpdate
+	DeviceID string
+	Status   string
+}
 
 //color temp update in the future mayhaps (ez but mehh)
 
@@ -85,6 +98,12 @@ func Initiate_sse(b Bridge, appkey string, p *tea.Program) tea.Cmd {
 						p.Send(update)
 					case SceneStateUpdate:
 						p.Send(update)
+					case SceneActiveUpdate:
+						p.Send(update)
+					case SceneRecallUpdate:
+						p.Send(update)
+					case ZigbeeUpdate:
+						p.Send(update)
 					default:
 					}
 				}
@@ -111,6 +130,17 @@ func find_sse_update(obj map[string]any) (s SseUpdate) {
 }
 
 func fetch_sse_update(obj map[string]any, sseupdate SseUpdate) any {
+	if sseupdate.Type == "zigbee_connectivity" {
+		status, ok := obj["status"]
+		if ok {
+			if ok {
+				owner := obj["owner"]
+				rid := owner.(map[string]any)["rid"]
+				return ZigbeeUpdate{sseupdate, rid.(string), status.(string)}
+			}
+		}
+		return "nothing"
+	}
 	if v, ok := obj["on"]; ok {
 		on := v.(map[string]any)["on"]
 		return StateUpdate{sseupdate, on.(bool)}
@@ -125,29 +155,35 @@ func fetch_sse_update(obj map[string]any, sseupdate SseUpdate) any {
 		return ColorUpdate{sseupdate, XyColor{x.(float64), y.(float64)}}
 
 	} else if v, ok := obj["status"]; ok {
-		active, ok := v.(map[string]any)["active"]
-		if !ok {
-			// check if its some zigbee shit
-		}
-		lastrecall, ok := v.(map[string]any)["last_recall"].(time.Time)
-		if ok {
-
-			return SceneStateUpdate{sseupdate, sceneStatus{active.(string), lastrecall}}
-		} else {
-
-			return SceneStateUpdate{sseupdate, sceneStatus{active.(string), time.Time{}}}
+		activeObj := v.(map[string]any)["active"]
+		active, okActive := activeObj.(string)
+		lastrecallObj := v.(map[string]any)["last_recall"]
+		lastrecall, okRecall := lastrecallObj.(string)
+		t, err := time.Parse(time.RFC3339, lastrecall)
+		if okRecall && okActive && err == nil {
+			return SceneStateUpdate{sseupdate, sceneStatus{active, t}}
+		} else if okActive && !okRecall {
+			return SceneActiveUpdate{sseupdate, active}
+		} else if okRecall && !okActive && err == nil {
+			return SceneRecallUpdate{sseupdate, t}
 		}
 	}
 	return "None"
 }
 
-func Update_light_status(lights []Light, status StateUpdate) {
+func find_light(lights []Light, lightID string) *Light {
 	for i := range lights {
-		if lights[i].ID == status.Id {
-			lights[i].On = status.On
-			lights[i].Connected = true
-			break
+		if lights[i].ID == lightID {
+			return &lights[i]
 		}
+	}
+	return nil
+}
+func Update_light_status(lights []Light, status StateUpdate) {
+	l := find_light(lights, status.Id)
+	if l.ID == status.Id {
+		l.On = status.On
+		l.Connected = true
 	}
 }
 func Update_group_status(groups []Group, status StateUpdate) {
@@ -157,15 +193,12 @@ func Update_group_status(groups []Group, status StateUpdate) {
 			break
 		}
 	}
-
 }
 func Update_light_brightness(lights []Light, status BriUpdate) {
-	for i := range lights {
-		if lights[i].ID == status.Id {
-			lights[i].Dimming.Brightness = status.Brightness
-			lights[i].Connected = true
-			break
-		}
+	l := find_light(lights, status.Id)
+	if l.ID == status.Id {
+		l.Dimming.Brightness = status.Brightness
+		l.Connected = true
 	}
 }
 func Update_group_brightness(groups []Group, status BriUpdate) {
@@ -177,25 +210,50 @@ func Update_group_brightness(groups []Group, status BriUpdate) {
 	}
 }
 func Update_light_color(lights []Light, status ColorUpdate) {
-	for i := range lights {
-		if lights[i].ID == status.Id {
-			lights[i].Color = status.Color
-			break
+	l := find_light(lights, status.Id)
+	if l.ID == status.Id {
+		l.Color = status.Color
+	}
+}
+func find_scene(scenes []Scene, sceneID string) *Scene {
+	for i := range scenes {
+		if scenes[i].ID == sceneID {
+			return &scenes[i]
 		}
+	}
+	return nil
+}
+func Update_scene_status(scenes []Scene, status SceneStateUpdate) {
+	s := find_scene(scenes, status.Id)
+	if status.Status.Active == "inactive" {
+		s.Active = false
+	} else {
+		s.Active = true
+	}
+	s.LastRecall = status.Status.LastRecall
+}
+func Update_Scene_active(scenes []Scene, activeUpdate SceneActiveUpdate) {
+	s := find_scene(scenes, activeUpdate.Id)
+	if activeUpdate.Active == "inactive" {
+		s.Active = false
+	} else {
+		s.Active = true
 	}
 
 }
-func Update_scene_status(scenes []Scene, status SceneStateUpdate) {
-	for i := range scenes {
-		if scenes[i].ID == status.Id {
-			if status.Status.Active == "inactive" {
-				scenes[i].Active = false
-			} else {
-				scenes[i].Active = true
-			}
-			t := time.Time{}
-			if status.Status.LastRecall != t {
-				scenes[i].LastRecall = status.Status.LastRecall
+func Update_Scene_recall(scenes []Scene, recallUpdate SceneRecallUpdate) {
+	s := find_scene(scenes, recallUpdate.Id)
+	s.LastRecall = recallUpdate.LastRecall
+}
+
+func Update_light_connection(lights []Light, zig ZigbeeUpdate) {
+	for i := range lights {
+		if lights[i].owner.Rid == zig.DeviceID {
+			switch zig.Status {
+			case "connectivity_issue", "disconnected":
+				lights[i].Connected = false
+			case "connected":
+				lights[i].Connected = true
 			}
 			break
 		}

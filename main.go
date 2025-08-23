@@ -158,6 +158,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		bridge.Update_light_color(m.lights.AllItems, msg)
 	case bridge.SceneStateUpdate:
 		bridge.Update_scene_status(m.scenes.AllItems, msg)
+	case bridge.SceneActiveUpdate:
+		bridge.Update_Scene_active(m.scenes.AllItems, msg)
+	case bridge.SceneRecallUpdate:
+		bridge.Update_Scene_recall(m.scenes.AllItems, msg)
+	case bridge.ZigbeeUpdate:
+		bridge.Update_light_connection(m.lights.AllItems, msg)
+		bridge.Filter_Connectivity(&m.lights)
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q":

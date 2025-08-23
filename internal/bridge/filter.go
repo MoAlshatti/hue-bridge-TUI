@@ -62,6 +62,11 @@ func Sort_Connectivity(l *Lights, connDevices []Connectivity) {
 			}
 		}
 	}
+	Filter_Connectivity(l)
+}
+
+// function names are a reversed it seems lol
+func Filter_Connectivity(l *Lights) {
 	slices.SortStableFunc(l.AllItems, func(l1, l2 Light) int {
 		if l1.Connected && !l2.Connected {
 			return -1
