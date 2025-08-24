@@ -17,6 +17,11 @@ func Render_scene_title(title string, on, selected bool, width, height int) stri
 		status = "Active "
 	}
 
+	max_len := 18
+	if len(title) > max_len {
+		title = title[:15] + "..."
+	}
+
 	style := lipgloss.NewStyle().Width(get_scenepanel_width(width) - len(status))
 	selectedStyle := style.Background(white).Foreground(navy)
 

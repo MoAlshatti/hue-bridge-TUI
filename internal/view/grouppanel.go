@@ -16,6 +16,11 @@ func Render_group_title(title string, bri float64, on, selected, isNone bool, wi
 		status = fmt.Sprint(int(bri), "% ")
 	}
 
+	max_len := 18
+	if len(title) > max_len {
+		title = title[:15] + "..."
+	}
+
 	defaultStyle := lipgloss.NewStyle().Width(get_grouppanel_width(width) - len(status))
 	selectedStyle := defaultStyle.Background(aqua).Foreground(navy)
 
