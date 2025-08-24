@@ -1,6 +1,7 @@
 package view
 
 import (
+	"github.com/MoAlshatti/hue-bridge-TUI/internal/bridge"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -36,6 +37,9 @@ func Get_colormodal_width(width int) int {
 func get_brimodal_width(width int) int {
 	return width / 3
 }
+func Get_helpmodal_width(width int) int {
+	return bridge.Get_Help_width(width)
+}
 
 func get_bridgepanel_height(height int) int {
 	return height / 25
@@ -60,4 +64,7 @@ func Get_colormodal_height(height int) int {
 }
 func get_brimodal_height(height int) int {
 	return int(0.2 * float64(height))
+}
+func Get_helpmodal_height(height int) int {
+	return int(0.3 * float64(height))
 }

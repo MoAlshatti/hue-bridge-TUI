@@ -42,6 +42,7 @@ type model struct {
 	scenes     bridge.Scenes
 	brightness bridge.BrightnessModal
 	color      bridge.ColorModal
+	help       bridge.HelpModal
 	lights     bridge.Lights
 	panel      bridge.Panel
 	event      bridge.Event
@@ -50,8 +51,10 @@ type model struct {
 func initalModel() model {
 	bm := bridge.BrightnessModal{}
 	bm.Init()
-	cm := bridge.ColorModal{List: bridge.Initialize_list()}
-	view.Apply_list_style(&cm.List)
+	cm := bridge.ColorModal{List: bridge.Init_color_list()}
+	hm := bridge.HelpModal{List: bridge.Init_help_list()}
+	view.Apply_colorlist_style(&cm.List)
+	view.Apply_helplist_style(&hm.List)
 	return model{
 		userpage:   bridge.UserPage{Items: [2]string{"Quit", "Done!"}},
 		lights:     bridge.Lights{Cursor: 0},
@@ -59,6 +62,7 @@ func initalModel() model {
 		log:        &bridge.LogFile{},
 		brightness: bm,
 		color:      cm,
+		help:       hm,
 		panel:      bridge.BridgePanel,
 	}
 }
@@ -72,7 +76,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.win.width = msg.Width
 		m.win.height = msg.Height
-		view.Update_list_size(&m.color.List, msg.Width, msg.Height)
+		view.Update_colorlist_size(&m.color.List, msg.Width, msg.Height)
+		view.Update_helplist_size(&m.help.List, msg.Width, msg.Height)
 	case bridge.BridgeFoundMsg:
 		m.bridge = bridge.Bridge(msg)
 		m.event = bridge.FindingUser
@@ -169,7 +174,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "q":
 			switch m.event {
-			case bridge.DisplayingBrightness, bridge.DisplayingColors:
+			case bridge.DisplayingBrightness, bridge.DisplayingColors, bridge.DisplayingHelp:
 				// do nothing
 			default:
 				return m, tea.Quit
@@ -298,6 +303,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch m.event {
 			case bridge.DisplayingColors:
 				if m.color.List.SettingFilter() {
+					// could create a func for these boyz
 					m.color.List.SetFilterState(list.Unfiltered)
 					m.color.List.ResetFilter()
 					m.color.List.FilterInput.Reset()
@@ -312,7 +318,26 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.brightness.Input.Err = nil
 				m.event = bridge.DisplayingLights
 				return m, nil
+			case bridge.DisplayingHelp:
+				if m.help.List.SettingFilter() {
+					m.help.List.SetFilterState(list.Unfiltered)
+					m.help.List.ResetFilter()
+					m.color.List.FilterInput.Reset()
+					m.color.List.ResetSelected()
+					return m, nil
+				}
+				m.help.List.ResetSelected()
+				m.event = bridge.DisplayingLights
+				return m, nil
 			}
+		case "?":
+			if m.event == bridge.DisplayingLights {
+				cmd := bridge.Update_help_list(&m.help.List, m.panel, m.event)
+				m.event = bridge.DisplayingHelp
+				return m, cmd
+
+			}
+			return m, nil
 		case "enter":
 			switch m.event {
 			case bridge.RequestPressButton:
@@ -370,12 +395,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	}
-	cmds := make([]tea.Cmd, 2)
+	//or i could just return immedietly instead of batching?
+	cmds := make([]tea.Cmd, 3)
 	switch m.event {
 	case bridge.DisplayingColors:
-		m.color.List, cmds[1] = m.color.List.Update(msg)
+		m.color.List, cmds[0] = m.color.List.Update(msg)
 	case bridge.DisplayingBrightness:
-		*m.brightness.Input, cmds[0] = m.brightness.Input.Update(msg)
+		*m.brightness.Input, cmds[1] = m.brightness.Input.Update(msg)
+	case bridge.DisplayingHelp:
+		m.help.List, cmds[2] = m.help.List.Update(msg)
 	}
 	return m, tea.Batch(cmds...)
 }
@@ -385,7 +413,7 @@ func (m model) View() string {
 	case bridge.RequestPressButton:
 		userpage := view.Render_userpage(m.userpage)
 		return lipgloss.Place(m.win.width, m.win.height, lipgloss.Center, lipgloss.Center, userpage)
-	case bridge.DisplayingLights, bridge.DisplayingBrightness, bridge.DisplayingColors:
+	case bridge.DisplayingLights, bridge.DisplayingBrightness, bridge.DisplayingColors, bridge.DisplayingHelp:
 
 		bridgepanel := view.Render_bridge(m.bridge, m.panel, m.win.width, m.win.height)
 		grouppanel := view.Render_group(m.groups, m.panel, m.win.width, m.win.height)
@@ -411,6 +439,9 @@ func (m model) View() string {
 				m.brightness.Input.Err == nil,
 				m.win.width,
 				m.win.height)
+		} else if m.event == bridge.DisplayingHelp {
+			//display the help layer
+			output = view.Render_help_modal(output, m.help.List.View(), m.win.width, m.win.height)
 		}
 		return output
 	}

@@ -25,6 +25,7 @@ const (
 	DisplayingLights
 	DisplayingColors
 	DisplayingBrightness
+	DisplayingHelp
 )
 
 type Panel int
@@ -184,6 +185,12 @@ func (c Color) FilterValue() string { return c.Name }
 type ColorModal struct {
 	List list.Model
 }
+
+type HelpModal struct {
+	List list.Model
+}
+
+func (c Keybind) FilterValue() string { return c.Description }
 
 type ErrMsg struct {
 	Err error

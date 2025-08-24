@@ -13,7 +13,12 @@ func Apply_footer(e bridge.Event, p bridge.Panel, width int) string {
 	s := ""
 	switch p {
 	case bridge.BridgePanel:
-		strs = append(strs, render_keybinds(bridge.GroupsPan, bridge.LightsPan, bridge.ScenesPan, bridge.Help)...)
+		switch e {
+		case bridge.DisplayingLights:
+			strs = append(strs, render_keybinds(bridge.GroupsPan, bridge.LightsPan, bridge.ScenesPan, bridge.Help)...)
+		case bridge.DisplayingHelp:
+			strs = append(strs, render_keybinds(bridge.Cancel, bridge.Up, bridge.Down, bridge.PrevPage, bridge.NextPage)...)
+		}
 	case bridge.GroupPanel:
 		switch e {
 		case bridge.DisplayingLights:
@@ -23,6 +28,8 @@ func Apply_footer(e bridge.Event, p bridge.Panel, width int) string {
 				bridge.Decrease_bri, bridge.Increase_bri)...)
 		case bridge.DisplayingBrightness:
 			strs = append(strs, render_keybinds(bridge.Cancel, bridge.Apply)...)
+		case bridge.DisplayingHelp:
+			strs = append(strs, render_keybinds(bridge.Cancel, bridge.Up, bridge.Down, bridge.PrevPage, bridge.NextPage)...)
 		}
 	case bridge.LightPanel:
 		switch e {
@@ -37,11 +44,18 @@ func Apply_footer(e bridge.Event, p bridge.Panel, width int) string {
 			strs = append(strs, render_keybinds(bridge.Cancel,
 				bridge.PrevPage, bridge.NextPage,
 				bridge.Apply, bridge.Filter)...)
+		case bridge.DisplayingHelp:
+			strs = append(strs, render_keybinds(bridge.Cancel, bridge.Up, bridge.Down, bridge.PrevPage, bridge.NextPage)...)
 		}
 	case bridge.ScenePanel:
-		strs = append(strs, render_keybinds(bridge.Up, bridge.Down,
-			bridge.BridgePan, bridge.GroupsPan, bridge.LightsPan,
-			bridge.Off, bridge.Help)...)
+		switch e {
+		case bridge.DisplayingLights:
+			strs = append(strs, render_keybinds(bridge.Up, bridge.Down,
+				bridge.BridgePan, bridge.GroupsPan, bridge.LightsPan,
+				bridge.Off, bridge.Help)...)
+		case bridge.DisplayingHelp:
+			strs = append(strs, render_keybinds(bridge.Cancel, bridge.Up, bridge.Down, bridge.PrevPage, bridge.NextPage)...)
+		}
 	}
 
 	for i := 0; len(s) <= width && i < len(strs); i++ {
