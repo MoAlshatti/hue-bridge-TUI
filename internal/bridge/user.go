@@ -21,11 +21,15 @@ const fileName = "userinfo.txt"
 
 func Find_User(b Bridge) tea.Cmd {
 	return func() tea.Msg {
-		data, err := os.ReadFile(fileName)
-		username := strings.TrimSpace(string(data))
+		path, err := get_config_path()
 		if err != nil {
 			return NoUserFoundMsg(ErrMsg{err})
 		}
+		data, err := os.ReadFile(path + fileName)
+		if err != nil {
+			return NoUserFoundMsg(ErrMsg{err})
+		}
+		username := strings.TrimSpace(string(data))
 		url := fmt.Sprintf("https://%s/clip/v2/resource/bridge", b.Ip_addr)
 
 		req, cancel, err := create_finduser_req(url, string(username))
@@ -133,10 +137,30 @@ type UserNotSaved ErrMsg
 
 func Save_Username(username string) tea.Cmd {
 	return func() tea.Msg {
-		err := os.WriteFile(fileName, []byte(username), 0644)
+		path, err := get_config_path()
 		if err != nil {
 			return UserNotSaved(ErrMsg{err})
 		}
+
+		err = os.MkdirAll(path, 0700)
+		if err != nil {
+			return UserNotSaved(ErrMsg{err})
+		}
+
+		err = os.WriteFile(path+fileName, []byte(username), 0644)
+		if err != nil {
+			return UserNotSaved(ErrMsg{err})
+		}
+
 		return nil
 	}
+}
+
+func get_config_path() (string, error) {
+	path, err := os.UserConfigDir()
+	if err != nil {
+		return "", err
+	}
+	path += "/huecli/"
+	return path, nil
 }

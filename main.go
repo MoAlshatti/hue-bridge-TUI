@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/MoAlshatti/hue-bridge-TUI/internal/bridge"
 	"github.com/MoAlshatti/hue-bridge-TUI/internal/view"
@@ -10,12 +11,21 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-const logFileName = ".debug.log"
+const logFileName = "debug.log"
 
 var p *tea.Program
 
 func main() {
-	file, err := tea.LogToFile(logFileName, "")
+	path, err := os.UserCacheDir()
+	if err != nil {
+		log.Fatal(err)
+	}
+	path += "/huecli/"
+	err = os.MkdirAll(path, 0700)
+	if err != nil {
+		log.Fatal(err)
+	}
+	file, err := tea.LogToFile(path+logFileName, "")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -86,7 +96,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.log.Log_Print(bridge.ErrMsg(msg))
 		return m, tea.Quit
 	case bridge.NoUserFoundMsg:
-		m.log.Log_Print(bridge.ErrMsg(msg))
+		log.Println(bridge.ErrMsg(msg))
 		m.event = bridge.RequestPressButton
 	case bridge.UserFoundMsg:
 		m.event = bridge.FetchingGroups
