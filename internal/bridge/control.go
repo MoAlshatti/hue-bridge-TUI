@@ -414,7 +414,7 @@ func Change_light_color(b Bridge, light Light, color Color, appkey string) tea.C
 		defer resp.Body.Close()
 
 		if resp.StatusCode == http.StatusOK {
-			return ResourceSuccessMsg(fmt.Sprint(light.Metadata.Name, "color changed!"))
+			return ResourceSuccessMsg(fmt.Sprint(light.Metadata.Name, " color changed!"))
 		}
 		return ResourceErrMsg(ErrMsg{errors.New(resp.Status + ": " + light.Metadata.Name + " Failed to change Color!")})
 	}
