@@ -15,6 +15,16 @@ A sleek terminal UI for controlling your philips hue lights via the terminal
 - [License](#license)
 
 <h2 id="installation">Installation 📦</h2>
+<h3>Install via Go</h3>
+
+  ```
+  go install github.com/MoAlshatti/hue-bridge-TUI/cmd/huecli@latest
+```
+<h3>Install via homebrew (for mac)</h3>
+
+  ```
+  coming soon
+```
 
 <h2 id="usage">Usage ⚙️</h2>
 
@@ -35,6 +45,5 @@ A sleek terminal UI for controlling your philips hue lights via the terminal
 <h2 id="license">License ⚖️</h2>
 
 [MIT](https://choosealicense.com/licenses/mit/)
-
 
 
