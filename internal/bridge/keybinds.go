@@ -45,4 +45,6 @@ var (
 	CancelBri    = Keybind{Esc + "/b", "Cancel", "Cancel brightness mode"}
 	Cancel       = Keybind{Esc, "Cancel", "Close the current modal window"}
 	Off          = Keybind{Enter, "on/off,", "Toggle On/Off"}
+	MoveLeft     = Keybind{Left, "Navigate Left", ""}
+	MoveRight    = Keybind{Right, "Navigate Right", ""}
 )

@@ -422,7 +422,9 @@ func (m model) View() string {
 	switch event := m.event; event {
 	case bridge.RequestPressButton:
 		userpage := view.Render_userpage(m.userpage)
-		return lipgloss.Place(m.win.width, m.win.height, lipgloss.Center, lipgloss.Center, userpage)
+		footer := view.Apply_footer(m.event, m.panel, m.win.width)
+		output := lipgloss.JoinVertical(lipgloss.Left, userpage, footer)
+		return lipgloss.Place(m.win.width, m.win.height, lipgloss.Center, lipgloss.Center, output)
 	case bridge.DisplayingLights, bridge.DisplayingBrightness, bridge.DisplayingColors, bridge.DisplayingHelp:
 
 		bridgepanel := view.Render_bridge(m.bridge, m.panel, m.win.width, m.win.height)

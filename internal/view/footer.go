@@ -57,6 +57,9 @@ func Apply_footer(e bridge.Event, p bridge.Panel, width int) string {
 			strs = append(strs, render_keybinds(bridge.Cancel, bridge.Up, bridge.Down, bridge.PrevPage, bridge.NextPage)...)
 		}
 	}
+	if e == bridge.RequestPressButton {
+		strs = append(strs, render_keybinds(bridge.MoveLeft, bridge.MoveRight, bridge.Apply)...)
+	}
 
 	for i := 0; len(s) <= width && i < len(strs); i++ {
 		s += strs[i]
