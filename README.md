@@ -20,10 +20,11 @@ A sleek terminal UI for controlling your philips hue lights via the terminal
   ```
   go install github.com/MoAlshatti/hue-bridge-TUI/cmd/huecli@latest
 ```
-<h3>Install via homebrew (for mac)</h3>
+<h3>Install via homebrew (works for mac and linux)</h3>
 
   ```
-  coming soon
+  brew tap MoAlshatti/homebrew-tap
+  brew install --cask huecli
 ```
 
 <h2 id="usage">Usage ⚙️</h2>
