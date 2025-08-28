@@ -74,6 +74,10 @@ func Render_scene_panel(elems []string, selected bool, cursor, width, height int
 
 func Render_scenes(s bridge.Scenes, p bridge.Panel, width, height int) string {
 	var scenes []string
+
+	if len(s.Items) < 1 {
+		scenes = append(scenes, Render_scene_title(" ", false, false, width, height))
+	}
 	for i, v := range s.Items {
 		scenes = append(scenes, Render_scene_title(v.Name,
 			v.Active,
@@ -94,7 +98,7 @@ func Render_scene_details(s bridge.Scene, width, height int) string {
 	speed := style.Render(fmt.Sprintln("Speed: ", s.Speed))
 	lastrecall := style.Render(fmt.Sprintln("Last Recall: ", s.LastRecall.Format(time.RFC850)))
 	var group []string
-	group = append(group, style.Render(fmt.Sprint("Group Information: ")))
+	group = append(group, style.Render("Group Information: "))
 	group = append(group, style.Render(fmt.Sprint("Rid: ", s.Group_Rid)))
 	group = append(group, style.Render(fmt.Sprintln("Rtype: ", s.Group_Rtype)))
 
@@ -105,6 +109,10 @@ func Render_scene_details(s bridge.Scene, width, height int) string {
 		lipgloss.JoinVertical(lipgloss.Left, group...),
 		speed,
 		lastrecall)
+
+	if len(output) < 1 {
+		return style.Render(" ")
+	}
 
 	if lipgloss.Height(output) >= get_detailspanel_height(height) {
 		output_array := strings.Split(output, "\n")

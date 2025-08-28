@@ -130,6 +130,8 @@ func find_sse_update(obj map[string]any) (s SseUpdate) {
 }
 
 func fetch_sse_update(obj map[string]any, sseupdate SseUpdate) any {
+	//Type assertion should always be checked, fix later
+
 	if sseupdate.Type == "zigbee_connectivity" {
 		status, ok := obj["status"]
 		if ok {
@@ -142,11 +144,23 @@ func fetch_sse_update(obj map[string]any, sseupdate SseUpdate) any {
 		return "nothing"
 	}
 	if v, ok := obj["on"]; ok {
-		on := v.(map[string]any)["on"]
-		return StateUpdate{sseupdate, on.(bool)}
+		onmap, ok := v.(map[string]any)
+		if !ok {
+			return "none"
+		}
+		on, ok := onmap["on"]
+		if ok {
+			return StateUpdate{sseupdate, on.(bool)}
+		}
 	} else if v, ok := obj["dimming"]; ok {
-		bri := v.(map[string]any)["brightness"]
-		return BriUpdate{sseupdate, bri.(float64)}
+		brimap, ok := v.(map[string]any)
+		if !ok {
+			return "none"
+		}
+		bri, ok := brimap["brightness"]
+		if ok {
+			return BriUpdate{sseupdate, bri.(float64)}
+		}
 
 	} else if v, ok := obj["color"]; ok {
 		xy := v.(map[string]any)["xy"]

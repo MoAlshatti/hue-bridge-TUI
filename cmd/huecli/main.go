@@ -196,15 +196,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.panel = bridge.BridgePanel
 			}
 		case "2":
-			if m.event == bridge.DisplayingLights {
+			if m.event == bridge.DisplayingLights && len(m.groups.Items) > 0 {
 				m.panel = bridge.GroupPanel
 			}
 		case "3":
-			if m.event == bridge.DisplayingLights {
+			if m.event == bridge.DisplayingLights && len(m.lights.Items) > 0 {
 				m.panel = bridge.LightPanel
 			}
 		case "4":
-			if m.event == bridge.DisplayingLights {
+			if m.event == bridge.DisplayingLights && len(m.scenes.Items) > 0 {
 				m.panel = bridge.ScenePanel
 			}
 		case "j", "down":

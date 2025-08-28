@@ -33,5 +33,8 @@ func Render_details(b bridge.Bridge, g bridge.Groups, l bridge.Lights, s bridge.
 			details = Render_scene_details(*s.Items[s.Cursor], width, height)
 		}
 	}
+	if len(details) < 1 {
+		details = lipgloss.NewStyle().Width(get_detailspanel_width(width)).Render(" ")
+	}
 	return Render_details_panel(details, width, height)
 }
