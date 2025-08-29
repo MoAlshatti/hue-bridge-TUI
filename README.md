@@ -29,6 +29,23 @@ A sleek terminal UI for controlling your philips hue lights via the terminal
 
 <h2 id="usage">Usage ⚙️</h2>
 
+
+After installation, run:
+
+```bash
+huecli
+```
+
+It will guide you through the setup.  
+
+
+<p align="center">
+  <b>Quick walkthrough on YT</b><br><br>
+  <a href="https://youtu.be/j0Z38CyYGIs">
+    <img src="https://img.youtube.com/vi/j0Z38CyYGIs/maxresdefault.jpg" alt="Video guide" width="600">
+  </a>
+</p>
+
 <h2 id="features">Features ✨</h2>
 
 #### Filtering 🪄
