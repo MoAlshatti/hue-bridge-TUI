@@ -3,6 +3,7 @@ package bridge
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"log"
 	"net/http"
@@ -32,6 +33,10 @@ func Find_bridges() tea.Msg {
 		if err != nil {
 			return NoBridgeFoundMsg(ErrMsg{err})
 		}
+	}
+
+	if len(brdgs) < 1 {
+		return NoBridgeFoundMsg(ErrMsg{errors.New("No bridges found!")})
 	}
 
 	brdgs[0].ID, _ = strings.CutPrefix(brdgs[0].ID, "bridgeid=")
