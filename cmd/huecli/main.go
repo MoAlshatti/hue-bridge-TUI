@@ -63,20 +63,20 @@ type model struct {
 }
 
 func initalModel() model {
-	bm := bridge.BrightnessModal{}
-	bm.Init()
-	cm := bridge.ColorModal{List: bridge.Init_color_list()}
-	hm := bridge.HelpModal{List: bridge.Init_help_list()}
-	view.Apply_colorlist_style(&cm.List)
-	view.Apply_helplist_style(&hm.List)
+	briModal := bridge.BrightnessModal{}
+	briModal.Init()
+	colModal := bridge.ColorModal{List: bridge.Init_color_list()}
+	helpModal := bridge.HelpModal{List: bridge.Init_help_list()}
+	view.Apply_colorlist_style(&colModal.List)
+	view.Apply_helplist_style(&helpModal.List)
 	return model{
 		userpage:   bridge.UserPage{Items: [2]string{"Quit", "Done!"}},
 		lights:     bridge.Lights{Cursor: 0},
 		groups:     bridge.Groups{Cursor: 0},
 		log:        &bridge.LogFile{},
-		brightness: bm,
-		color:      cm,
-		help:       hm,
+		brightness: briModal,
+		color:      colModal,
+		help:       helpModal,
 		panel:      bridge.BridgePanel,
 	}
 }
@@ -415,7 +415,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	}
-	//or i could just return immedietly instead of batching?
 	cmds := make([]tea.Cmd, 3)
 	switch m.event {
 	case bridge.DisplayingColors:
