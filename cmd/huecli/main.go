@@ -15,6 +15,9 @@ const logFileName = "debug.log"
 
 var p *tea.Program
 
+// lets violate programming principles with another mutable global variable <3
+var EXIT_ERRMSG string = ""
+
 func main() {
 	path, err := os.UserCacheDir()
 	if err != nil {
@@ -35,6 +38,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	println(EXIT_ERRMSG)
 }
 
 type window struct {
@@ -94,6 +98,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, bridge.Find_User(m.bridge)
 	case bridge.NoBridgeFoundMsg:
 		m.log.Log_Print(bridge.ErrMsg(msg))
+		EXIT_ERRMSG = bridge.ErrMsg(msg).Error()
 		return m, tea.Quit
 	case bridge.NoUserFoundMsg:
 		log.Println(bridge.ErrMsg(msg))
@@ -107,6 +112,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, bridge.Find_bridges
 	case bridge.NoClientCreatedMsg:
 		m.log.Log_Print(bridge.ErrMsg(msg))
+		EXIT_ERRMSG = bridge.ErrMsg(msg).Error()
 		return m, tea.Quit
 	case bridge.UserCreatedMsg:
 		m.log.Log_Print("User Created Successfully!")
@@ -117,11 +123,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			bridge.Initiate_sse(m.bridge, m.user.Username, p))
 	case bridge.UserCreationFailedMsg:
 		m.log.Log_Print("Failed to create user, err: ", bridge.ErrMsg(msg))
+		EXIT_ERRMSG = bridge.ErrMsg(msg).Error()
 		return m, tea.Quit
 	case bridge.ButtonNotPressed:
 		m.log.Log_Print(string(msg))
 	case bridge.FailedFetchingLightsMsg:
 		m.log.Log_Print(bridge.ErrMsg(msg))
+		EXIT_ERRMSG = bridge.ErrMsg(msg).Error()
 		return m, tea.Quit
 	case bridge.SseFailedMsg:
 		m.log.Log_Print("sse failed: ", msg)
@@ -135,6 +143,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, bridge.Fetch_connectivity(m.bridge, m.user.Username)
 	case bridge.FailedToFetchGroupsMsg:
 		m.log.Log_Print(bridge.ErrMsg(msg))
+		EXIT_ERRMSG = bridge.ErrMsg(msg).Error()
 		return m, tea.Quit
 	case bridge.GroupsMsg:
 		m.log.Log_Print("Groups Fetched!")
@@ -144,6 +153,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			bridge.Fetch_Scenes(m.bridge, m.user.Username, m.log))
 	case bridge.FailedToFetchScenesMsg:
 		m.log.Log_Print(bridge.ErrMsg(msg))
+		EXIT_ERRMSG = bridge.ErrMsg(msg).Error()
 		return m, tea.Quit
 	case bridge.ScenesMsg:
 		m.log.Log_Print("Scenes Fetched!")
