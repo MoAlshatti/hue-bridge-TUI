@@ -4,17 +4,17 @@
 ![TUI](https://img.shields.io/badge/UI-TUI-blueviolet?style=for-the-badge)
 
 # Huecli 💡🖥️
-A sleek terminal UI for controlling your philips hue lights via the terminal
+A terminal UI for controlling philips hue lights via the terminal
 
 ![DEMO](img/tuidemo.gif)
 
-## Table of contents 🧭
+## Table of contents
 - [Installation](#installation) 
 - [Usage](#usage)
 - [Features](#features)
 - [License](#license)
 
-<h2 id="installation">Installation 📦</h2>
+<h2 id="installation">Installation</h2>
 <h3>Install via Go</h3>
 
   ```
@@ -27,7 +27,7 @@ A sleek terminal UI for controlling your philips hue lights via the terminal
   brew install --cask huecli
 ```
 
-<h2 id="usage">Usage ⚙️</h2>
+<h2 id="usage">Usage</h2>
 
 
 After installation, run:
@@ -46,18 +46,18 @@ It will guide you through the setup.
   </a>
 </p>
 
-<h2 id="features">Features ✨</h2>
+<h2 id="features">Features</h2>
 
-#### Filtering 🪄
- * Filtering lights and scenes based on the group 
-#### server-sent events 📡
- * Syncs with changes made outside the app in real-time
-#### multiple control options 🎛️
- * Allows you to control individual lights as well as group of lights
-#### vim-like keybinds ⌨️
- * Supports vim keybinds as well as arrows
-#### Hue API V2 support 🔗
- * Utilizes the most recent version of the hue API
+#### Filtering 
+ * Filtering lights and scenes based on groups
+#### server-sent events
+ * Syncs with changes made outside the app (from the main hue app for example)
+#### multiple control options 
+ * Control individual lights, as well as groups
+#### vim-like keybinds
+ * Supports vim keybinds, and arrows
+#### Hue API V2 support
+ * Uses the most recent version of the hue API
 
 
 <h2 id="license">License ⚖️</h2>
